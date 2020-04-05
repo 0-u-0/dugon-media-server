@@ -23,7 +23,7 @@ class Agent {
 
     this.nc.subscribe('media@', async (requestMsg, replyTo) => {
       const { method, params } = JSON.parse(requestMsg);
-      // console.log(requestMsg);
+      console.log(requestMsg);
 
       switch (method) {
         case 'transport': {
