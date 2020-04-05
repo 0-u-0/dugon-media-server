@@ -101,6 +101,17 @@ async function main() {
 
         break;
       }
+      case 'unsubscribe': {
+        const { transportId, producerId } = params;
+
+        const subscriber = hub.transports.get(transportId);
+        if (subscriber) {
+          subscriber.unsubscribe(producerId);
+          response(replyTo);
+        }
+
+        break;
+      }
     }
 
   })

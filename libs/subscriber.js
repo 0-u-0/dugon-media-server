@@ -309,7 +309,13 @@ class Subscriber extends Transport {
         rtpCapabilities: rtpCapabilities,
         paused: false //TODO: pause when the kind of producer is video
       });
-    this.consumers.set(consumer.id, consumer);
+
+    consumer.on('producerclose', () => {
+      // Remove from its map.
+      this.consumers.delete(producerId);
+    });
+
+    this.consumers.set(producerId, consumer);
 
     return {
       consumerId: consumer.id,
@@ -319,6 +325,13 @@ class Subscriber extends Transport {
       producerPaused: consumer.producerPaused
     }
   }
+
+  unsubscribe(producerId) {
+    const consumer = this.consumers.get(producerId);
+    consumer.close();
+    this.consumers.delete(producerId);
+  }
+
 }
 
 module.exports = Subscriber;
