@@ -48,66 +48,65 @@ class Agent {
           }
           break;
         }
-        case 'produce': {
+        case 'publish': {
           const { transportId, kind, rtpParameters, metadata } = params;
 
           const publisher = this.hub.transports.get(transportId);
           if (publisher) {
-            const producerId = await publisher.produce(kind, rtpParameters, metadata);
+            const senderId = await publisher.publish(kind, rtpParameters, metadata);
             this.response(replyTo, {
-              producerId
+              senderId
             });
           }
           break;
         }
-        case 'producers': {
+        case 'senders': {
           const { transportId } = params;
           const publisher = this.hub.transports.get(transportId);
           if (publisher) {
-            const producers = [];
-            for (let [producerId, producer] of publisher.producers) {
-              producers.push({
-                producerId,
-                metadata: producer.appData
+            const senders = [];
+            for (let [senderId, sender] of publisher.senders) {
+              senders.push({
+                senderId,
+                metadata: sender.appData
               })
             }
             this.response(replyTo, {
-              producers
+              senders
             });
           }
           break;
         }
-        case 'consume': {
-          const { transportId, producerId } = params;
+        case 'subscribe': {
+          const { transportId, senderId } = params;
 
           const subscriber = this.hub.transports.get(transportId);
           if (subscriber) {
-            const consumerParameters = await subscriber.consume(producerId);
+            const parameters = await subscriber.subscribe(senderId);
             this.response(replyTo, {
-              consumerParameters
+              parameters
             });
 
           }
 
           break;
         }
-        case 'closeProducer': {
-          const { transportId, producerId } = params;
+        case 'unpublish': {
+          const { transportId, senderId } = params;
 
           const publisher = this.hub.transports.get(transportId);
           if (publisher) {
-            publisher.closeProducer(producerId);
+            publisher.unpublish(senderId);
             this.response(replyTo);
           }
-
           break;
         }
         case 'unsubscribe': {
-          const { transportId, producerId } = params;
+          const { transportId, senderId } = params;
 
           const subscriber = this.hub.transports.get(transportId);
           if (subscriber) {
-            this.subscriber.unsubscribe(producerId);
+            this.subscriber.unsubscribe(senderId);
             this.response(replyTo);
           }
 

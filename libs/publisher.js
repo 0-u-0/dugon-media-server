@@ -1,28 +1,31 @@
 const Transport = require('./transport');
+const Sender = require('./sender');
 
 class Publisher extends Transport {
   constructor(id, router) {
     super(id, router);
-    this.producers = new Map();
+    this.senders = new Map();
   }
 
   async init() {
     await super.init(true);
   }
 
-  async produce(kind, rtpParameters, appData) {
-    const producer = await this.transport.produce({ kind, rtpParameters, appData });
-    this.producers.set(producer.id, producer);
-    return producer.id;
+  async publish(kind, rtpParameters, appData) {
+    const sender = new Sender(this, kind, rtpParameters, appData);
+    await sender.init();
+    this.senders.set(sender.id, sender);
+    return sender.id;
   }
 
-  closeProducer(producerId) {
-    const producer = this.producers.get(producerId);
-    if (producer) {
-      producer.close();
-      this.producers.delete(producerId);
+  unpublish(senderId) {
+    const sender = this.senders.get(senderId);
+    if (sender) {
+      sender.close();
+      this.senders.delete(senderId);
     }
   }
+
 
 }
 
