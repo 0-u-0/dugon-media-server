@@ -299,6 +299,10 @@ class Receiver {
     this.consumer = null;
   }
 
+  get id(){
+    return this.consumer.id;    
+  }
+
   async init() {
     this.consumer = await this.subscriber.transport.consume(
       {
@@ -309,7 +313,7 @@ class Receiver {
 
     this.consumer.on('producerclose', () => {
       // Remove from its map.
-      this.onsenderclose();
+      this.onclose();
     });
   }
 

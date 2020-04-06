@@ -35,6 +35,11 @@ class Agent {
           });
           break;
         }
+        case 'close': {
+          const { transportId } = params;
+          this.hub.close(transportId);
+          break;
+        }
         case 'dtls': {
           const { transportId, dtlsParameters } = params;
 

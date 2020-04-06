@@ -71,6 +71,14 @@ class Hub {
     return transport;
   }
 
+  close(transportId){
+    const transport = this.transports.get(transportId);
+    if(transport){
+      transport.close();
+      this.transports.delete(transportId);
+    }
+  }
+
 }
 
 

@@ -20,7 +20,12 @@ class Transport {
     }
   }
 
-  async init(isPub) {
+  async init() {
+    let isPub = false;
+    if(this.role === 'pub'){
+      isPub = true;
+    }
+
     // TODO: move to config
     const webRtcTransportOptions =
     {
@@ -46,6 +51,10 @@ class Transport {
 
   async setDtlsParameters(dtlsParameters) {
     await this.transport.connect({ dtlsParameters });
+  }
+
+  close(){
+    this.transport.close();
   }
 
 }

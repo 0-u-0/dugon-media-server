@@ -5,16 +5,14 @@ class Subscriber extends Transport {
   constructor(id, router) {
     super(id, router);
     this.receivers = new Map();
-  }
 
-  async init() {
-    await super.init(false);
+    this.role = 'sub';
   }
 
   async subscribe(senderId) {
     const receiver = new Receiver(this, senderId);
 
-    receiver.onsenderclose = _ => {
+    receiver.onclose = _ => {
       this.receivers.delete(senderId);
     };
 

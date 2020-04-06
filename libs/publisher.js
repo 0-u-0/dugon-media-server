@@ -5,14 +5,16 @@ class Publisher extends Transport {
   constructor(id, router) {
     super(id, router);
     this.senders = new Map();
-  }
-
-  async init() {
-    await super.init(true);
+    this.role = 'pub';
   }
 
   async publish(kind, rtpParameters, appData) {
     const sender = new Sender(this, kind, rtpParameters, appData);
+
+    sender.onclose = _ => {
+      this.senders.delete(sender.id);
+    };
+
     await sender.init();
     this.senders.set(sender.id, sender);
     return sender.id;

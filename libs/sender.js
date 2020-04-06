@@ -16,6 +16,10 @@ class Sender {
       rtpParameters: this.rtpParameters,
       metadata: this.metadata
     });//producer
+
+    this.producer.on("transportclose", _ => {
+      this.onclose();
+    });
   }
 
   get id() {
