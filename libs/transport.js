@@ -6,23 +6,40 @@ class Transport {
   }
 
   get transportParameters() {
-    //TODO: 
+    //TODO: make these parameters as attributes
+
+    //FIXME: maybe provide more options?
     const dtls = {
       fingerprint: this.transport.dtlsParameters.fingerprints[2],
       role: 'server'
     };
 
+
+    //https://tools.ietf.org/id/draft-ietf-mmusic-ice-sip-sdp-14.html#rfc.section.5.1
+    const candidates = [];
+    for (let candidate of this.transport.iceCandidates) {
+      candidates.push({
+        foundation: candidate.foundation,
+        ip: candidate.ip,
+        port: candidate.port,
+        priority: candidate.priority,
+        transport: candidate.protocol,
+        type: candidate.type,
+        component: 1 //FIXME: use BUNDLE as default
+      })
+    }
+
     return {
       id: this.id,
       iceParameters: this.transport.iceParameters,
-      iceCandidates: this.transport.iceCandidates,
+      iceCandidates: candidates,
       dtlsParameters: dtls,
     }
   }
 
   async init() {
     let isPub = false;
-    if(this.role === 'pub'){
+    if (this.role === 'pub') {
       isPub = true;
     }
 
@@ -53,7 +70,7 @@ class Transport {
     await this.transport.connect({ dtlsParameters });
   }
 
-  close(){
+  close() {
     this.transport.close();
   }
 
