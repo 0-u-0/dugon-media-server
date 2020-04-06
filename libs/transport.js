@@ -11,9 +11,8 @@ class Transport {
     //FIXME: maybe provide more options?
     const dtls = {
       fingerprint: this.transport.dtlsParameters.fingerprints[2],
-      role: 'server'
+      setup: 'passive'
     };
-
 
     //https://tools.ietf.org/id/draft-ietf-mmusic-ice-sip-sdp-14.html#rfc.section.5.1
     const candidates = [];
@@ -67,7 +66,20 @@ class Transport {
   }
 
   async setDtlsParameters(dtlsParameters) {
-    await this.transport.connect({ dtlsParameters });
+    const { setup, fingerprint } = dtlsParameters;
+    let role;
+    if ('active' === setup) {
+      role = 'client';
+    } else if ('passive' === setup) {
+      role = 'server';
+    }
+
+    await this.transport.connect({
+      dtlsParameters: {
+        role,
+        fingerprints: [fingerprint]
+      }
+    });
   }
 
   close() {
