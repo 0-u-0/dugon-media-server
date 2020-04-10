@@ -319,7 +319,7 @@ class Receiver {
 
   getParameters() {
     return {
-      consumerId: this.consumer.id,
+      receiverId: this.consumer.id,
       kind: this.consumer.kind,
       rtpParameters: this.consumer.rtpParameters,
       type: this.consumer.type,
