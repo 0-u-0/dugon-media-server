@@ -22,6 +22,14 @@ class Sender {
     });
   }
 
+  async pause(){
+    await this.producer.pause();
+  }
+
+  async resume(){
+    await this.producer.resume();
+  }
+
   get id() {
     return this.producer.id;
   }

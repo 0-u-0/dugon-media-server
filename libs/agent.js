@@ -117,6 +117,15 @@ class Agent {
 
           break;
         }
+        case 'resume': {
+          const { transportId, role } = params;
+          
+          
+          break;
+        }
+        case 'pause': {
+          break;
+        } 
       }
 
     })

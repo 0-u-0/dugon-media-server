@@ -327,6 +327,15 @@ class Receiver {
     }
   }
 
+  async pause(){
+    await this.consumer.pause();
+  }
+
+  async resume(){
+    await this.consumer.resume();
+  }
+
+
   close() {
     this.consumer.close();
   }

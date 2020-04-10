@@ -5,6 +5,10 @@ class Transport {
     this.transport = null;
   }
 
+  //useless interface
+  async pause(senderId){};
+  async resume(senderId){};
+
   get transportParameters() {
     //TODO: make these parameters as attributes
 

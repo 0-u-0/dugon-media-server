@@ -28,6 +28,20 @@ class Publisher extends Transport {
     }
   }
 
+  async pause(senderId){
+    const sender = this.senders.get(senderId);
+    if (sender) {
+      await sender.pause();
+    }
+  }
+
+  async resume(senderId){
+    const sender = this.senders.get(senderId);
+    if (sender) {
+      await sender.resume();
+    }
+  }
+
 
 }
 

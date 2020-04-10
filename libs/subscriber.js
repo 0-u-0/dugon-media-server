@@ -29,6 +29,20 @@ class Subscriber extends Transport {
     this.receivers.delete(senderId);
   }
 
+  async pause(senderId){
+    const receiver = this.receivers.get(senderId);
+    if (receiver) {
+      await receiver.pause();
+    }
+  }
+
+  async resume(senderId){
+    const receiver = this.receivers.get(senderId);
+    if (receiver) {
+      await receiver.resume();
+    }
+  }
+
 }
 
 module.exports = Subscriber;
