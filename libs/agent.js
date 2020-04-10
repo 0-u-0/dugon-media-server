@@ -118,14 +118,31 @@ class Agent {
           break;
         }
         case 'resume': {
-          const { transportId, role } = params;
-          
-          
+          const { transportId, senderId } = params;
+
+          const transport = this.hub.transports.get(transportId);
+          if (transport) {
+            await transport.resume(senderId)
+            this.response(replyTo);
+          } else {
+            //TODO: error
+          }
+
           break;
         }
         case 'pause': {
+          const { transportId, senderId } = params;
+
+          const transport = this.hub.transports.get(transportId);
+          if (transport) {
+            await transport.pause(senderId)
+            this.response(replyTo);
+          } else {
+            //TODO: error
+          }
+          
           break;
-        } 
+        }
       }
 
     })
