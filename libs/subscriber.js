@@ -25,8 +25,10 @@ class Subscriber extends Transport {
 
   unsubscribe(senderId) {
     const receiver = this.receivers.get(senderId);
-    receiver.close();
-    this.receivers.delete(senderId);
+    if(receiver){
+      receiver.close();
+      this.receivers.delete(senderId);
+    }
   }
 
   async pause(senderId){

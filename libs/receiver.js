@@ -323,7 +323,7 @@ class Receiver {
       kind: this.consumer.kind,
       rtpParameters: this.consumer.rtpParameters,
       type: this.consumer.type,
-      producerPaused: this.consumer.producerPaused
+      senderPaused: this.consumer.producerPaused
     }
   }
 
