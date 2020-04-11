@@ -111,7 +111,7 @@ class Agent {
 
           const subscriber = this.hub.transports.get(transportId);
           if (subscriber) {
-            this.subscriber.unsubscribe(senderId);
+            subscriber.unsubscribe(senderId);
             this.response(replyTo);
           }
 
