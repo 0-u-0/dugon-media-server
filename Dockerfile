@@ -9,7 +9,7 @@ RUN mkdir -p /code
 WORKDIR /code
 COPY . /code
 
-RUN npm install && npm cache clean --force
+RUN npm install
 
 CMD ["npm", "start"]
 
