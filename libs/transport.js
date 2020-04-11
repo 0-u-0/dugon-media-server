@@ -40,7 +40,7 @@ class Transport {
     }
   }
 
-  async init() {
+  async init(ip,publicIp) {
     let isPub = false;
     if (this.role === 'pub') {
       isPub = true;
@@ -52,8 +52,8 @@ class Transport {
       listenIps:
         [
           {
-            ip: '127.0.0.1',
-            announcedIp: '127.0.0.1'
+            ip: ip,
+            announcedIp: publicIp
           }
         ],
       initialAvailableOutgoingBitrate: 1000000,

@@ -20,9 +20,14 @@ const mediaCodecs = [{
 }];
 
 class Hub {
-  constructor() {
+  constructor(ip,publicIp,port) {
+    this.ip = ip;
+    this.publicIp = publicIp;
+
     this.worker = null;
     this.router = null;
+
+    this.port = port;
 
     this.transports = new Map();
   }
@@ -45,8 +50,8 @@ class Hub {
           'svc',
           'sctp'
         ],
-        rtcMinPort: 40000,
-        rtcMaxPort: 49999
+        rtcMinPort: this.port.min,
+        rtcMaxPort: this.port.max
       });
 
     this.worker.on('died', () => {
@@ -66,7 +71,7 @@ class Hub {
     } else {
       transport = new Subscriber(id, this.router);
     }
-    await transport.init();
+    await transport.init(this.ip,this.publicIp);
     this.transports.set(id, transport);
     return transport;
   }

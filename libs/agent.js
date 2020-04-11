@@ -4,7 +4,6 @@ class Agent {
   constructor(hub) {
     this.hub = hub;
     this.nc = null;
-
   }
 
   response(replyTo, data = {}) {
@@ -18,8 +17,9 @@ class Agent {
 
   }
 
-  init() {
-    this.nc = NATS.connect();
+  init(natsUrls) {
+    
+    this.nc = NATS.connect({ servers: natsUrls });
 
     this.nc.subscribe('media@', async (requestMsg, replyTo) => {
       const { method, params } = JSON.parse(requestMsg);
