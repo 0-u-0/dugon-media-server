@@ -8,13 +8,13 @@ const Config = require('./config');
 async function main() {
   console.log(Config);
   const hub = new Hub(Config.ip, Config.publicIp,Config.port);
-  await hub.init(Config.nats);
+  await hub.init();
 
   const monitor = new Monitor(7070, hub);
   monitor.serve();
 
   const agent = new Agent(hub);
-  agent.init();
+  agent.init(Config.nats);
 
 }
 
