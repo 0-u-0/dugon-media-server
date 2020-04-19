@@ -13,14 +13,41 @@ const mediaCodecs = [{
   kind: 'video',
   mimeType: 'video/VP8',
   clockRate: 90000,
+},
+{
+  kind: 'video',
+  mimeType: 'video/VP9',
+  clockRate: 90000,
   parameters:
   {
-    'x-google-start-bitrate': 1000
+    'profile-id': 2,
+  }
+},
+{
+  kind: 'video',
+  mimeType: 'video/h264',
+  clockRate: 90000,
+  parameters:
+  {
+    'packetization-mode': 1,
+    'profile-level-id': '4d0032',
+    'level-asymmetry-allowed': 1
+  }
+},
+{
+  kind: 'video',
+  mimeType: 'video/h264',
+  clockRate: 90000,
+  parameters:
+  {
+    'packetization-mode': 1,
+    'profile-level-id': '42e01f',
+    'level-asymmetry-allowed': 1
   }
 }];
 
 class Hub {
-  constructor(ip,publicIp,port) {
+  constructor(ip, publicIp, port) {
     this.ip = ip;
     this.publicIp = publicIp;
 
@@ -30,6 +57,8 @@ class Hub {
     this.port = port;
 
     this.transports = new Map();
+
+    this.codecsSupported = null;
   }
 
   async init() {
@@ -61,7 +90,64 @@ class Hub {
     });
 
     this.router = await this.worker.createRouter({ mediaCodecs });
+  }
 
+  get codecs() {
+    if (this.router && !this.codecsSupported ) {
+      let originCap = this.router.rtpCapabilities;
+      let { codecs, headerExtensions } = JSON.parse(JSON.stringify(originCap));
+      
+      for(let extension of headerExtensions){
+
+        if(extension.direction.includes('send')){
+          extension.send = true;
+        }
+        if(extension.direction.includes('recv')){
+          extension.recv = true;
+        }
+        //FIXME: maybe useful?
+        delete extension.direction;
+        delete extension.preferredEncrypt;
+      }
+
+      for (let codec of codecs){
+        let realCodec = codec.mimeType.split('/')[1];
+        if(realCodec === 'H264'){
+          /**
+          const H264_BASELINE = '42001f';
+          const H264_CONSTRAINED_BASELINE = '42e01f'
+          const H264_MAIN = '4d0032'
+          const H264_HIGH = '640032'
+           */
+          if (codec.parameters['profile-level-id'] == '42001f'){
+            realCodec = realCodec + '-BASELINE';
+          }else if (codec.parameters['profile-level-id'] == '42e01f'){
+            realCodec = realCodec + '-CONSTRAINED-BASELINE';
+          }else if (codec.parameters['profile-level-id'] == '4d0032'){
+            realCodec = realCodec + '-MAIN';
+          }else if (codec.parameters['profile-level-id'] == '640032'){
+            realCodec = realCodec + '-HIGH';
+          }
+        }
+
+        let newParameters = [];
+        for (let key in codec.parameters){
+          newParameters.push(`${key}=${codec.parameters[key]}`);
+        }
+        codec.parameters = newParameters;
+
+        codec.codecName = realCodec;
+
+        codec.ext = [];
+        for(let extension of headerExtensions){
+          if (codec.kind == extension.kind){
+            codec.ext.push(extension)
+          }
+        }
+      }
+      this.codecsSupported = codecs;
+    }
+    return this.codecsSupported;
   }
 
   async createTransport(id, role) {
@@ -71,14 +157,14 @@ class Hub {
     } else {
       transport = new Subscriber(id, this.router);
     }
-    await transport.init(this.ip,this.publicIp);
+    await transport.init(this.ip, this.publicIp);
     this.transports.set(id, transport);
     return transport;
   }
 
-  close(transportId){
+  close(transportId) {
     const transport = this.transports.get(transportId);
-    if(transport){
+    if (transport) {
       transport.close();
       this.transports.delete(transportId);
     }

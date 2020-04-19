@@ -26,6 +26,12 @@ class Agent {
       console.log(requestMsg);
 
       switch (method) {
+        case 'codecs':{
+          this.response(replyTo, {
+            codecs: this.hub.codecs
+          });
+          break;
+        }
         case 'transport': {
           const { transportId, role } = params;
           const transport = await this.hub.createTransport(transportId, role);
