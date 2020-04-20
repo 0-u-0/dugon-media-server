@@ -297,10 +297,35 @@ class Receiver {
     this.senderId = senderId;
 
     this.consumer = null;
+
+    this.rtpParameters = null;
   }
 
-  get id(){
-    return this.consumer.id;    
+  get id() {
+    return this.consumer.id;
+  }
+
+  get parameters() {
+    if (!this.rtpParameters) {
+      const { codecs, headerExtensions, encodings, rtcp, mid } = JSON.parse(JSON.stringify(this.consumer.rtpParameters));
+      let codec = {};
+      let rtx = null;
+      codec.mid = mid;
+      codec.ext = headerExtensions.map(e => { return { id: e.id, uri: e.uri } });
+      codec = Object.assign(rtcp, codec);
+      codec = Object.assign(codecs[0], codec);
+      codec = Object.assign(encodings[0], codec);
+      codec.kind = this.consumer.kind;
+      codec.senderPaused = this.consumer.producerPaused;
+
+      codec.codecName = codec.mimeType.split('/')[1];
+      if (codecs.length > 1) {
+        //rtx
+        codec.rtx.payload = codecs[1].payloadType;
+      }
+      this.rtpParameters = codec;
+    }
+    return this.rtpParameters;
   }
 
   async init() {
@@ -320,18 +345,15 @@ class Receiver {
   getParameters() {
     return {
       receiverId: this.consumer.id,
-      kind: this.consumer.kind,
-      rtpParameters: this.consumer.rtpParameters,
-      type: this.consumer.type,
-      senderPaused: this.consumer.producerPaused
+      parameters: this.parameters,
     }
   }
 
-  async pause(){
+  async pause() {
     await this.consumer.pause();
   }
 
-  async resume(){
+  async resume() {
     await this.consumer.resume();
   }
 

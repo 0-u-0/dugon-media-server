@@ -15,7 +15,7 @@ class Transport {
     //FIXME: maybe provide more options?
     const dtls = {
       fingerprint: this.transport.dtlsParameters.fingerprints[2],
-      setup: 'passive'
+      setup: 'active'
     };
 
     //https://tools.ietf.org/id/draft-ietf-mmusic-ice-sip-sdp-14.html#rfc.section.5.1
@@ -32,6 +32,7 @@ class Transport {
       })
     }
 
+    console.log(this.transport.iceParameters);
     return {
       id: this.id,
       iceParameters: this.transport.iceParameters,
