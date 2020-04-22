@@ -2,6 +2,7 @@ const mediasoup = require('mediasoup');
 
 const Publisher = require('./publisher');
 const Subscriber = require('./subscriber');
+const Codec = require('./codec');
 
 const mediaCodecs = [{
   kind: 'audio',
@@ -90,67 +91,13 @@ class Hub {
     });
 
     this.router = await this.worker.createRouter({ mediaCodecs });
+
+    ;   
   }
 
   get codecs() {
     if (this.router && !this.codecsSupported) {
-      let originCap = this.router.rtpCapabilities;
-      let { codecs, headerExtensions } = JSON.parse(JSON.stringify(originCap));
-
-      for (let extension of headerExtensions) {
-
-        if (extension.direction.includes('send')) {
-          extension.send = true;
-        }
-        if (extension.direction.includes('recv')) {
-          extension.recv = true;
-        }
-        //FIXME: maybe useful?
-        delete extension.direction;
-        delete extension.preferredEncrypt;
-      }
-
-      let codecMap = {};
-      for (let codec of codecs) {
-        let realCodec = codec.mimeType.split('/')[1];
-        //TODO: rtx
-        if (realCodec != 'rtx') {
-          if (realCodec === 'H264') {
-            /**
-            const H264_BASELINE = '42001f';
-            const H264_CONSTRAINED_BASELINE = '42e01f'
-            const H264_MAIN = '4d0032'
-            const H264_HIGH = '640032'
-             */
-            if (codec.parameters['profile-level-id'] == '42001f') {
-              realCodec = realCodec + '-BASELINE';
-            } else if (codec.parameters['profile-level-id'] == '42e01f') {
-              realCodec = realCodec + '-CONSTRAINED-BASELINE';
-            } else if (codec.parameters['profile-level-id'] == '4d0032') {
-              realCodec = realCodec + '-MAIN';
-            } else if (codec.parameters['profile-level-id'] == '640032') {
-              realCodec = realCodec + '-HIGH';
-            }
-          }
-
-          let newParameters = [];
-          for (let key in codec.parameters) {
-            newParameters.push(`${key}=${codec.parameters[key]}`);
-          }
-          codec.parameters = newParameters;
-
-          codec.codecName = realCodec;
-
-          codec.ext = [];
-          for (let extension of headerExtensions) {
-            if (codec.kind == extension.kind) {
-              codec.ext.push(extension)
-            }
-          }
-          codecMap[realCodec] = codec;
-        }
-      }
-      this.codecsSupported = codecMap;
+      this.codecsSupported = Codec.initByCaps(this.router.rtpCapabilities)
     }
     return this.codecsSupported;
   }
