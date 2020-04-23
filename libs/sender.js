@@ -1,19 +1,21 @@
-
+const Codec = require('./codec')
 
 class Sender {
-  constructor(publisher, kind, rtpParameters, metadata) {
+  constructor(publisher, codec, metadata) {
     this.publisher = publisher
     this.producer = null;
 
-    this.kind = kind;
-    this.rtpParameters = rtpParameters;
+    this.codec = Object.assign(new Codec(), codec);
     this.metadata = metadata;
   }
 
   async init() {
+
+    console.log(JSON.stringify(this.codec.toRtpParameters(),null,'\t'));
+
     this.producer = await this.publisher.transport.produce({
-      kind: this.kind,
-      rtpParameters: this.rtpParameters,
+      kind: this.codec.kind,
+      rtpParameters: this.codec.toRtpParameters(),
       metadata: this.metadata
     });//producer
 
@@ -22,11 +24,11 @@ class Sender {
     });
   }
 
-  async pause(){
+  async pause() {
     await this.producer.pause();
   }
 
-  async resume(){
+  async resume() {
     await this.producer.resume();
   }
 

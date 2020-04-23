@@ -97,7 +97,7 @@ class Hub {
 
   get codecs() {
     if (this.router && !this.codecsSupported) {
-      this.codecsSupported = Codec.initByCaps(this.router.rtpCapabilities)
+      this.codecsSupported = Codec.cap2Codecs(this.router.rtpCapabilities)
     }
     return this.codecsSupported;
   }

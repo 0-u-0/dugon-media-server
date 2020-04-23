@@ -8,8 +8,8 @@ class Publisher extends Transport {
     this.role = 'pub';
   }
 
-  async publish(kind, rtpParameters, appData) {
-    const sender = new Sender(this, kind, rtpParameters, appData);
+  async publish(codec, metadata) {
+    const sender = new Sender(this, codec, metadata);
 
     sender.onclose = _ => {
       this.senders.delete(sender.id);

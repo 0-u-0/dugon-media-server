@@ -60,11 +60,11 @@ class Agent {
           break;
         }
         case 'publish': {
-          const { transportId, kind, rtpParameters, metadata } = params;
+          const { transportId, codec, metadata } = params;
 
           const publisher = this.hub.transports.get(transportId);
           if (publisher) {
-            const senderId = await publisher.publish(kind, rtpParameters, metadata);
+            const senderId = await publisher.publish(codec, metadata);
             this.response(replyTo, {
               senderId
             });

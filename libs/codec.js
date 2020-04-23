@@ -1,6 +1,4 @@
 
-
-
 function getRealCodecName(codecName, parameters) {
   if (codecName === 'H264') {
     /**
@@ -33,6 +31,17 @@ class Extension {
   }
 }
 
+class RtpCodec {
+  constructor(mimeType, payloadType, channels, clockRate, parameters = {}, rtcpFeedback = []) {
+    this.mimeType = mimeType;
+    this.payloadType = payloadType;
+    this.channels = channels;
+    this.clockRate = clockRate;
+    this.parameters = parameters;
+    this.rtcpFeedback = rtcpFeedback;
+  }
+}
+
 class Codec {
   constructor() {
     this.kind = null;
@@ -50,6 +59,7 @@ class Codec {
     this.dtx = false;
     this.senderPaused = false;
 
+    this.reducedSize = true;
     // payload, ssrc
     this.rtx = null;
 
@@ -59,10 +69,11 @@ class Codec {
     this.parameters = {};
     // [{type,parameter}]
     this.rtcpFeedback = [];
+
   }
 
   // caps -> client
-  static initByCaps(originCap) {
+  static cap2Codecs(originCap) {
     let { codecs, headerExtensions } = JSON.parse(JSON.stringify(originCap));
 
     let videoExtension = [];
@@ -105,15 +116,63 @@ class Codec {
         /** */
         codec.extensions = extensions[c.kind];
         codec.rtcpFeedback = c.rtcpFeedback;
-        for (let k in c.parameters){
+        for (let k in c.parameters) {
           codec.parameters[k] = String(c.parameters[k]);
         }
 
         codecMap[realName] = codec;
-      }   
+      }
     }
 
     return codecMap;
+  }
+
+  pairParseInt(pairs) {
+    for (let k in pairs) {
+      let value = pairs[k];
+      if (String(parseInt(value)).length === value.length) {
+        pairs[k] = parseInt(value)
+      }
+    }
+    return pairs
+  }
+
+  toRtpParameters() {
+
+    const parameters = this.pairParseInt(this.parameters);
+
+    const codecs = [
+      new RtpCodec(`${this.kind}/${this.codecName}`, this.payload, this.channels, this.clockRate, parameters, this.rtcpFeedback)
+    ]
+
+    const encodings = [
+      {
+        "ssrc": this.ssrc,
+        "dtx": this.dtx,
+      }
+    ]
+    if (this.rtx) {
+      codecs.push(new RtpCodec("video/rtx", this.rtx.payload, this.channels, this.clockRate, {
+        "apt": this.payload
+      }))
+      encodings[0]["rtx"] = {
+        ssrc: this.rtx.ssrc
+      }
+    }
+    const headerExtensions = this.extensions;
+    const rtcp = {
+      "reducedSize": true,
+      "cname": this.cname
+    }
+
+    return {
+      mid: this.mid,
+      codecs,
+      headerExtensions,
+      rtcp,
+      encodings
+    }
+
   }
 
 }
