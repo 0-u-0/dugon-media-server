@@ -45,8 +45,9 @@ class Codec {
     /**options */
     this.mid = null;
     this.ssrc = null;
-    this.dtx = null;
     this.cname = null;
+
+    this.dtx = false;
     this.senderPaused = false;
 
     // payload, ssrc
@@ -54,8 +55,8 @@ class Codec {
 
     // [{id,uri}]
     this.extensions = [];
-    // [{key:value}]
-    this.parameters = [];
+    // {key:value}
+    this.parameters = {};
     // [{type,parameter}]
     this.rtcpFeedback = [];
   }
@@ -104,7 +105,9 @@ class Codec {
         /** */
         codec.extensions = extensions[c.kind];
         codec.rtcpFeedback = c.rtcpFeedback;
-        codec.parameters = c.parameters;
+        for (let k in c.parameters){
+          codec.parameters[k] = String(c.parameters[k]);
+        }
 
         codecMap[realName] = codec;
       }   
