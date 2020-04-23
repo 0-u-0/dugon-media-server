@@ -32,7 +32,6 @@ class Transport {
       })
     }
 
-    console.log(this.transport.iceParameters);
     return {
       id: this.id,
       iceParameters: this.transport.iceParameters,

@@ -11,8 +11,6 @@ class Sender {
 
   async init() {
 
-    console.log(JSON.stringify(this.codec.toRtpParameters(),null,'\t'));
-
     this.producer = await this.publisher.transport.produce({
       kind: this.codec.kind,
       rtpParameters: this.codec.toRtpParameters(),
