@@ -1,4 +1,4 @@
-
+const Codec = require('./codec');
 const rtpCapabilities = {
   "codecs": [
     {
@@ -298,34 +298,11 @@ class Receiver {
 
     this.consumer = null;
 
-    this.rtpParameters = null;
+    this.codec = null;
   }
 
   get id() {
     return this.consumer.id;
-  }
-
-  get parameters() {
-    if (!this.rtpParameters) {
-      const { codecs, headerExtensions, encodings, rtcp, mid } = JSON.parse(JSON.stringify(this.consumer.rtpParameters));
-      let codec = {};
-      let rtx = null;
-      codec.mid = mid;
-      codec.ext = headerExtensions.map(e => { return { id: e.id, uri: e.uri } });
-      codec = Object.assign(rtcp, codec);
-      codec = Object.assign(codecs[0], codec);
-      codec = Object.assign(encodings[0], codec);
-      codec.kind = this.consumer.kind;
-      codec.senderPaused = this.consumer.producerPaused;
-
-      codec.codecName = codec.mimeType.split('/')[1];
-      if (codecs.length > 1) {
-        //rtx
-        codec.rtx.payload = codecs[1].payloadType;
-      }
-      this.rtpParameters = codec;
-    }
-    return this.rtpParameters;
   }
 
   async init() {
@@ -335,6 +312,9 @@ class Receiver {
         rtpCapabilities: rtpCapabilities,
         paused: false //TODO: pause when the kind of producer is video
       });
+    
+    //TODO: use self random id
+    this.codec = Codec.create(this.consumer.rtpParameters)
 
     this.consumer.on('producerclose', () => {
       // Remove from its map.
@@ -342,12 +322,6 @@ class Receiver {
     });
   }
 
-  getParameters() {
-    return {
-      receiverId: this.consumer.id,
-      parameters: this.parameters,
-    }
-  }
 
   async pause() {
     await this.consumer.pause();

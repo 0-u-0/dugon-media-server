@@ -17,28 +17,31 @@ class Subscriber extends Transport {
     };
 
     await receiver.init()
-    
+
     this.receivers.set(senderId, receiver);
 
-    return receiver.getParameters();
+    return {
+      receiverId: receiver.id,
+      codec: receiver.codec
+    };
   }
 
   unsubscribe(senderId) {
     const receiver = this.receivers.get(senderId);
-    if(receiver){
+    if (receiver) {
       receiver.close();
       this.receivers.delete(senderId);
     }
   }
 
-  async pause(senderId){
+  async pause(senderId) {
     const receiver = this.receivers.get(senderId);
     if (receiver) {
       await receiver.pause();
     }
   }
 
-  async resume(senderId){
+  async resume(senderId) {
     const receiver = this.receivers.get(senderId);
     if (receiver) {
       await receiver.resume();

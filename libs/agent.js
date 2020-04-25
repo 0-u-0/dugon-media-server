@@ -18,7 +18,7 @@ class Agent {
   }
 
   init(natsUrls) {
-    
+
     this.nc = NATS.connect({ servers: natsUrls });
 
     this.nc.subscribe('media@', async (requestMsg, replyTo) => {
@@ -26,7 +26,7 @@ class Agent {
       console.log(requestMsg);
 
       switch (method) {
-        case 'codecs':{
+        case 'codecs': {
           this.response(replyTo, {
             codecs: this.hub.codecs
           });
@@ -93,9 +93,10 @@ class Agent {
 
           const subscriber = this.hub.transports.get(transportId);
           if (subscriber) {
-            const parameters = await subscriber.subscribe(senderId);
+            const { codec, receiverId } = await subscriber.subscribe(senderId);
             this.response(replyTo, {
-              parameters
+              codec,
+              receiverId
             });
 
           }
@@ -146,7 +147,7 @@ class Agent {
           } else {
             //TODO: error
           }
-          
+
           break;
         }
       }

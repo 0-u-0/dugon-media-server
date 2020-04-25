@@ -31,6 +31,24 @@ class Extension {
   }
 }
 
+//TODO: mv this to utils
+function pairParseInt(pairs) {
+  for (let k in pairs) {
+    let value = pairs[k];
+    if (String(parseInt(value)).length === value.length) {
+      pairs[k] = parseInt(value)
+    }
+  }
+  return pairs
+}
+
+function valueToStr(pair) {
+  for (let k in pair) {
+    pair[k] = String(pair[k]);
+  }
+  return pair;
+}
+
 class RtpCodec {
   constructor(mimeType, payloadType, channels, clockRate, parameters = {}, rtcpFeedback = []) {
     this.mimeType = mimeType;
@@ -60,6 +78,7 @@ class Codec {
     this.senderPaused = false;
 
     this.reducedSize = true;
+    this.mux = true;
     // payload, ssrc
     this.rtx = null;
 
@@ -72,7 +91,43 @@ class Codec {
 
   }
 
-  // caps -> client
+  //TODO: add sender pause
+  static create(rtpParameters) {
+    const { codecs, headerExtensions, encodings, rtcp, mid } = JSON.parse(JSON.stringify(rtpParameters));
+    let oldCodec = codecs[0];
+    let newCodec = new Codec();
+
+    const [kind, codecName] = oldCodec.mimeType.split('/');
+
+    newCodec.kind = kind;
+    newCodec.channels = oldCodec.channels ? oldCodec.channels : 1
+    newCodec.payload = oldCodec.payloadType;
+    newCodec.clockRate = oldCodec.clockRate;
+    newCodec.codecName = codecName;
+    newCodec.codecFullName = getRealCodecName(codecName, oldCodec.parameters);
+    newCodec.parameters = valueToStr(oldCodec.parameters);
+    newCodec.rtcpFeedback = oldCodec.rtcpFeedback;
+    newCodec.ssrc = encodings[0].ssrc;
+
+    newCodec.mid = rtcp.mid;
+    newCodec.mux = rtcp.mux;
+    newCodec.reducedSize = rtcp.reducedSize;
+    newCodec.cname = rtcp.cname;
+
+    newCodec.extensions = headerExtensions.map(e => { return { id: e.id, uri: e.uri } })
+
+    //rtx
+    if (codecs.length > 1 && codecs[1].mimeType === 'video/rtx') {
+      newCodec.rtx = {
+        payload: codecs[1].payloadType,
+        ssrc: encodings[0].rtx.ssrc
+      }
+    }
+
+    return newCodec;
+  }
+
+  // mediasoup caps -> client
   static cap2Codecs(originCap) {
     let { codecs, headerExtensions } = JSON.parse(JSON.stringify(originCap));
 
@@ -104,6 +159,7 @@ class Codec {
     for (let c of codecs) {
       let codecName = c.mimeType.split('/')[1];
       let realName = getRealCodecName(codecName, c.parameters);
+      //TODO: add rtx
       if (codecName != 'rtx') {
         let codec = new Codec();
         codec.kind = c.kind;
@@ -116,9 +172,7 @@ class Codec {
         /** */
         codec.extensions = extensions[c.kind];
         codec.rtcpFeedback = c.rtcpFeedback;
-        for (let k in c.parameters) {
-          codec.parameters[k] = String(c.parameters[k]);
-        }
+        codec.parameters = valueToStr(c.parameters);
 
         codecMap[realName] = codec;
       }
@@ -127,19 +181,10 @@ class Codec {
     return codecMap;
   }
 
-  pairParseInt(pairs) {
-    for (let k in pairs) {
-      let value = pairs[k];
-      if (String(parseInt(value)).length === value.length) {
-        pairs[k] = parseInt(value)
-      }
-    }
-    return pairs
-  }
-
+  //client.sender -> mediasoup
   toRtpParameters() {
 
-    const parameters = this.pairParseInt(this.parameters);
+    const parameters = pairParseInt(this.parameters);
 
     const codecs = [
       new RtpCodec(`${this.kind}/${this.codecName}`, this.payload, this.channels, this.clockRate, parameters, this.rtcpFeedback)
@@ -166,7 +211,7 @@ class Codec {
     }
 
     return {
-      mid: this.mid,
+      mid: String(this.mid),
       codecs,
       headerExtensions,
       rtcp,
