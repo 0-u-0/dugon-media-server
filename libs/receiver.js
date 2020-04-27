@@ -140,17 +140,6 @@ const rtpCapabilities = {
     },
     {
       "kind": "video",
-      "mimeType": "video/rtx",
-      "preferredPayloadType": 106,
-      "clockRate": 90000,
-      "channels": 1,
-      "parameters": {
-        "apt": 105
-      },
-      "rtcpFeedback": []
-    },
-    {
-      "kind": "video",
       "mimeType": "video/H264",
       "clockRate": 90000,
       "parameters": {
@@ -184,17 +173,6 @@ const rtpCapabilities = {
       "channels": 1,
       "preferredPayloadType": 107
     },
-    {
-      "kind": "video",
-      "mimeType": "video/rtx",
-      "preferredPayloadType": 108,
-      "clockRate": 90000,
-      "channels": 1,
-      "parameters": {
-        "apt": 107
-      },
-      "rtcpFeedback": []
-    }
   ],
   "headerExtensions": [
     {

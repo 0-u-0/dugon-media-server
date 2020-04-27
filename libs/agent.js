@@ -79,7 +79,7 @@ class Agent {
             for (let [senderId, sender] of publisher.senders) {
               senders.push({
                 senderId,
-                metadata: sender.appData
+                metadata: sender.metadata
               })
             }
             this.response(replyTo, {

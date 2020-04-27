@@ -10,11 +10,11 @@ class Sender {
   }
 
   async init() {
-
+    let rtpParameters = this.codec.toRtpParameters();
     this.producer = await this.publisher.transport.produce({
       kind: this.codec.kind,
-      rtpParameters: this.codec.toRtpParameters(),
-      metadata: this.metadata
+      metadata: this.metadata,
+      rtpParameters
     });//producer
 
     this.producer.on("transportclose", _ => {
