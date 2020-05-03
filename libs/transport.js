@@ -14,7 +14,7 @@ class Transport {
 
     //FIXME: maybe provide more options?
     const dtls = {
-      fingerprint: this.transport.dtlsParameters.fingerprints[2],
+      ...this.transport.dtlsParameters.fingerprints[2],
       setup: 'active'
     };
 

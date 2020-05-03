@@ -91,8 +91,7 @@ class Codec {
 
   }
 
-  //TODO: add sender pause
-  static create(rtpParameters) {
+  static create(rtpParameters,senderPaused) {
     const { codecs, headerExtensions, encodings, rtcp, mid } = JSON.parse(JSON.stringify(rtpParameters));
     let oldCodec = codecs[0];
     let newCodec = new Codec();
@@ -108,6 +107,7 @@ class Codec {
     newCodec.parameters = valueToStr(oldCodec.parameters);
     newCodec.rtcpFeedback = oldCodec.rtcpFeedback;
     newCodec.ssrc = encodings[0].ssrc;
+    newCodec.senderPaused = senderPaused;
 
     newCodec.mid = rtcp.mid;
     newCodec.mux = rtcp.mux;

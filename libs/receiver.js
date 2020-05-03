@@ -310,11 +310,12 @@ class Receiver {
       {
         producerId: this.senderId,
         rtpCapabilities: rtpCapabilities,
-        paused: false //TODO: pause when the kind of producer is video
+        paused: true
       });
     
+    //TODO: maintenance senderPaused by myself
     //TODO: use self random id
-    this.codec = Codec.create(this.consumer.rtpParameters)
+    this.codec = Codec.create(this.consumer.rtpParameters,this.consumer.producerPaused)
 
     this.consumer.on('producerclose', () => {
       // Remove from its map.
