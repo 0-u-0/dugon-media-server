@@ -7,8 +7,9 @@ class Agent {
   }
 
   response(replyTo, data = {}) {
+    console.log('response', data);
     this.nc.publish(replyTo, JSON.stringify({
-      type: 'response',
+      method: 'response',
       data
     }));
   }
@@ -76,9 +77,10 @@ class Agent {
           const publisher = this.hub.transports.get(transportId);
           if (publisher) {
             const senders = [];
+            //TODO: map
             for (let [senderId, sender] of publisher.senders) {
               senders.push({
-                senderId,
+                id: senderId,
                 metadata: sender.metadata
               })
             }
