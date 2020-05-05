@@ -2,8 +2,15 @@ const NATS = require('nats');
 
 class Agent {
   constructor(hub) {
+    this.id = '?';
+    this.name = '?';
+    this.area = '?';
+    this.host = '?';
+
     this.hub = hub;
     this.nc = null;
+
+    this.heartbeatTimer = null;
   }
 
   response(replyTo, data = {}) {
@@ -18,11 +25,15 @@ class Agent {
 
   }
 
-  init(natsUrls) {
+  init(natsUrls, id, name, host, area) {
+    this.id = id;
+    this.name = name;
+    this.host = host;
+    this.area = area;
 
     this.nc = NATS.connect({ servers: natsUrls });
 
-    this.nc.subscribe('media@', async (requestMsg, replyTo) => {
+    this.nc.subscribe(`media.${id}`, async (requestMsg, replyTo) => {
       const { method, params } = JSON.parse(requestMsg);
       console.log(requestMsg);
 
@@ -155,6 +166,19 @@ class Agent {
       }
 
     })
+
+    //TODO: release
+    //TODO: add cpu and bandwidth usage
+    const info = JSON.stringify({
+      id: this.id,
+      name: this.name,
+      host: this.host,
+      area: this.area
+    })
+    this.heartbeatTimer = setInterval(_ => {
+
+      this.nc.publish(`media@heartbeat`, info)
+    }, 1000);
   }
 
 
