@@ -1,4 +1,5 @@
 const NATS = require('nats');
+const MediaServer = require('./mediaserver');
 
 class Agent {
   constructor(hub) {
@@ -11,6 +12,8 @@ class Agent {
     this.nc = null;
 
     this.heartbeatTimer = null;
+
+    this.mediaServers = new Map();
   }
 
   response(replyTo, data = {}) {
@@ -32,6 +35,66 @@ class Agent {
     this.area = area;
 
     this.nc = NATS.connect({ servers: natsUrls });
+
+    this.nc.subscribe(`media@heartbeat`, async (requestMsg) => {
+      const { id, name, host, area } = JSON.parse(requestMsg);
+      //TODO(CC): deal with area
+      if (id !== this.id) {
+
+        const ms = this.mediaServers.get(id);
+        if (!ms) {
+
+          const pipe = await this.hub.createPipeTransport();
+          const mediaServer = new MediaServer(id, pipe);
+
+          mediaServer.onclose = _ => {
+            console.log(`${id} closed`);
+            this.mediaServers.delete(id);
+          };
+          mediaServer.init();
+          this.mediaServers.set(id, mediaServer);
+          this.nc.publish(`media@pipe.${id}`, JSON.stringify({
+            ip: mediaServer.tuple.ip,
+            port: mediaServer.tuple.port,
+            id: this.id,
+          }))
+        } else {
+          ms.isActive = true;
+        }
+      }
+
+    });
+
+    this.nc.subscribe(`media@pipe.${this.id}`, async (requestMsg, replyTo) => {
+      const { id, ip, port } = JSON.parse(requestMsg);
+
+      console.log(requestMsg, this.mediaServers.has(id));
+
+      const ms = this.mediaServers.get(id);
+      if (ms) {
+
+        await ms.connect(ip, port);
+      } else {
+
+        const pipe = await this.hub.createPipeTransport();
+        const mediaServer = new MediaServer(id, pipe);
+        mediaServer.onclose = _ => {
+          console.log(`${id} closed`);
+          this.mediaServers.delete(id);
+        };
+        mediaServer.init();
+        this.mediaServers.set(id, mediaServer);
+
+        await mediaServer.connect(ip, port);
+
+        this.nc.publish(`media@pipe.${id}`, JSON.stringify({
+          ip: mediaServer.tuple.ip,
+          port: mediaServer.tuple.port,
+          id: this.id,
+        }))
+      }
+
+    })
 
     this.nc.subscribe(`media.${id}`, async (requestMsg, replyTo) => {
       const { method, params } = JSON.parse(requestMsg);

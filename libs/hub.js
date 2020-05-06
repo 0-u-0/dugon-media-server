@@ -60,6 +60,8 @@ class Hub {
     this.transports = new Map();
 
     this.codecsSupported = null;
+
+    this.pipe = new Map();
   }
 
   async init() {
@@ -92,7 +94,7 @@ class Hub {
 
     this.router = await this.worker.createRouter({ mediaCodecs });
 
-    ;   
+       
   }
 
   get codecs() {
@@ -112,6 +114,13 @@ class Hub {
     await transport.init(this.ip, this.publicIp);
     this.transports.set(id, transport);
     return transport;
+  }
+
+  async createPipeTransport() {
+    //TODO(CC): listen ip
+    const pipeTransport = await this.router.createPipeTransport({ listenIp: this.ip });
+    return pipeTransport;
+
   }
 
   close(transportId) {
