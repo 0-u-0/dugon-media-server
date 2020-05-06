@@ -119,6 +119,7 @@ class Agent {
         case 'close': {
           const { transportId } = params;
           this.hub.close(transportId);
+          this.response(replyTo);
           break;
         }
         case 'dtls': {
