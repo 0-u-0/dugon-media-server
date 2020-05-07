@@ -166,16 +166,21 @@ class Agent {
           break;
         }
         case 'subscribe': {
-          const { transportId, senderId } = params;
+          const { mediaId, transportId, senderId } = params;
 
-          const subscriber = this.hub.transports.get(transportId);
-          if (subscriber) {
-            const { codec, receiverId } = await subscriber.subscribe(senderId);
-            this.response(replyTo, {
-              codec,
-              receiverId
-            });
+          if(mediaId === this.id){
+            const subscriber = this.hub.transports.get(transportId);
+            if (subscriber) {
+              const { codec, receiverId } = await subscriber.subscribe(senderId);
+              this.response(replyTo, {
+                codec,
+                receiverId
+              });
 
+            }
+
+          }else{
+            console.log('other media server...');
           }
 
           break;

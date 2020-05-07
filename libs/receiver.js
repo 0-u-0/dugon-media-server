@@ -310,7 +310,7 @@ class Receiver {
       {
         producerId: this.senderId,
         rtpCapabilities: rtpCapabilities,
-        paused: true
+        paused: false
       });
     
     //TODO: maintenance senderPaused by myself
