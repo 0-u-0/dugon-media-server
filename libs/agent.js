@@ -46,12 +46,10 @@ class Agent {
 
     this.nc = NATS.connect({ servers: natsUrls });
 
-    this.nc.subscribe(`media@heartbeat`, async (requestMsg) => {
+    this.nc.subscribe(`media@pipeheartbeat`, async (requestMsg) => {
       const { id, name, host, area, salt } = JSON.parse(requestMsg);
       //TODO(CC): deal with area
       if (id !== this.id) {
-        // console.log(requestMsg);
-
         const ms = this.mediaServers.get(id);
         if (!ms) {
           console.log('register mediaserver');
@@ -76,7 +74,6 @@ class Agent {
           }, 1500);
 
         } else {
-          // console.log(`salt ${ms.salt}  ${salt}`);
           if (ms.salt == salt) {
             ms.isActive = true;
           } else {
@@ -96,7 +93,7 @@ class Agent {
       const ms = this.mediaServers.get(id);
       if (ms) {
         await ms.connect(ip, port);
-      }else{
+      } else {
         //TODO(CC): impossible
       }
 
@@ -303,8 +300,8 @@ class Agent {
 
     })
 
-    //TODO: release
-    //TODO: add cpu and bandwidth usage
+    const times = 5;
+    const second = 1000;
     const info = JSON.stringify({
       id: this.id,
       name: this.name,
@@ -312,10 +309,23 @@ class Agent {
       area: this.area,
       salt: this.salt,
     })
-    this.heartbeatTimer = setInterval(_ => {
 
-      this.nc.publish(`media@heartbeat`, info)
-    }, 1000);
+    const registerTimer = setInterval(_ => {
+      this.nc.publish(`media@pipeheartbeat`, info);
+    }, second);
+
+    const registerReleaseTimer = setTimeout(_ => {
+      //TODO: release
+      //TODO: add cpu and bandwidth usage
+
+      this.heartbeatTimer = setInterval(_ => {
+
+        this.nc.publish(`media@heartbeat`, info)
+      }, 1000);
+      
+    }, second * times)
+
+
   }
 
 
