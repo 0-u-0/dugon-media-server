@@ -96,6 +96,27 @@ class Agent {
 
     })
 
+    this.nc.subscribe(`media@pipesub.${this.id}`, async (requestMsg, replyTo) => {
+      const { mediaId, producerId } = JSON.parse(requestMsg);
+      const media = this.mediaServers.get(mediaId);
+      if (media) {
+        const params = await media.consume(producerId);
+        if (params) {
+          console.log("pipeconsume");
+          // console.log(rtpParameters);
+          this.nc.publish(replyTo, JSON.stringify({
+            rtpParameters: params.rtpParameters,
+            kind: params.kind,
+            producerId,
+          }));
+        } else {
+          //TODO(CC): error
+        }
+      } else {
+        //TODO(CC): error
+      }
+    });
+    //for signal
     this.nc.subscribe(`media.${id}`, async (requestMsg, replyTo) => {
       const { method, params } = JSON.parse(requestMsg);
       console.log(requestMsg);
@@ -168,7 +189,7 @@ class Agent {
         case 'subscribe': {
           const { mediaId, transportId, senderId } = params;
 
-          if(mediaId === this.id){
+          if (mediaId === this.id) {
             const subscriber = this.hub.transports.get(transportId);
             if (subscriber) {
               const { codec, receiverId } = await subscriber.subscribe(senderId);
@@ -179,8 +200,36 @@ class Agent {
 
             }
 
-          }else{
+          } else {
             console.log('other media server...');
+            //check local mediaservers and pipeconsumer
+            if (false) {
+              //xxxxxx
+            } else {
+              //request pipe
+              const requestMsg = JSON.stringify({
+                mediaId: this.id,
+                producerId: senderId,
+              });
+
+              this.nc.request(`media@pipesub.${mediaId}`, requestMsg, async (responseMsg) => {
+                const { producerId, rtpParameters, kind } = JSON.parse(responseMsg);
+                const mediaServer = this.mediaServers.get(mediaId);
+                if (mediaServer) {
+                  await mediaServer.produce(producerId, kind, rtpParameters);
+
+                  const subscriber = this.hub.transports.get(transportId);
+                  if (subscriber) {
+                    const { codec, receiverId } = await subscriber.subscribe(producerId);
+                    this.response(replyTo, {
+                      codec,
+                      receiverId
+                    });
+
+                  }
+                }
+              })
+            }
           }
 
           break;

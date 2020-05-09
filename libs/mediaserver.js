@@ -4,6 +4,8 @@ class MediaServer {
     this.pipe = pipe;
     this.isActive = false;
     this.heartbeatCheckTimer = null;
+    this.pipeConsumers = new Map();
+    this.pipeProducers = new Map();
   }
 
   init() {
@@ -33,8 +35,24 @@ class MediaServer {
   async connect(ip, port) {
     if (this.pipe) {
       console.log('connect');
-      
+
       await this.pipe.connect({ ip, port });
+    }
+  }
+
+  async consume(producerId) {
+    if (!this.pipeConsumers.has(producerId)) {
+      const consumer = await this.pipe.consume({ producerId });
+      this.pipeConsumers.set(producerId, consumer);
+      return { rtpParameters: consumer.rtpParameters, kind: consumer.kind };
+    }
+    return null;
+  }
+
+  async produce(producerId, kind, rtpParameters) {
+    if (!this.pipeProducers.has(producerId)) {
+      const producer = await this.pipe.produce({ id: producerId, kind: kind, rtpParameters });
+      this.pipeProducers.set(producerId, producer);
     }
   }
 }
