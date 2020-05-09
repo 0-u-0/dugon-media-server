@@ -1,12 +1,22 @@
 const NATS = require('nats');
 const MediaServer = require('./mediaserver');
 
+function randomId(length) {
+  let randomNum = 0;
+  while (randomNum < 0.1) {
+    randomNum = Math.random();
+  }
+  return parseInt(randomNum * Math.pow(10, length))
+}
+
 class Agent {
   constructor(hub) {
     this.id = '?';
     this.name = '?';
     this.area = '?';
     this.host = '?';
+
+    this.salt = randomId(8);
 
     this.hub = hub;
     this.nc = null;
@@ -37,15 +47,17 @@ class Agent {
     this.nc = NATS.connect({ servers: natsUrls });
 
     this.nc.subscribe(`media@heartbeat`, async (requestMsg) => {
-      const { id, name, host, area } = JSON.parse(requestMsg);
+      const { id, name, host, area, salt } = JSON.parse(requestMsg);
       //TODO(CC): deal with area
       if (id !== this.id) {
+        // console.log(requestMsg);
 
         const ms = this.mediaServers.get(id);
         if (!ms) {
+          console.log('register mediaserver');
 
           const pipe = await this.hub.createPipeTransport();
-          const mediaServer = new MediaServer(id, pipe);
+          const mediaServer = new MediaServer(id, salt, pipe);
 
           mediaServer.onclose = _ => {
             console.log(`${id} closed`);
@@ -53,45 +65,39 @@ class Agent {
           };
           mediaServer.init();
           this.mediaServers.set(id, mediaServer);
-          this.nc.publish(`media@pipe.${id}`, JSON.stringify({
-            ip: mediaServer.tuple.ip,
-            port: mediaServer.tuple.port,
-            id: this.id,
-          }))
+
+          setTimeout(_ => {
+            this.nc.publish(`media@pipe.${id}`, JSON.stringify({
+              ip: mediaServer.tuple.ip,
+              port: mediaServer.tuple.port,
+              id: this.id,
+              salt,
+            }))
+          }, 1500);
+
         } else {
-          ms.isActive = true;
+          // console.log(`salt ${ms.salt}  ${salt}`);
+          if (ms.salt == salt) {
+            ms.isActive = true;
+          } else {
+            ms.close();
+            this.mediaServers.delete(id);
+          }
         }
       }
 
     });
 
     this.nc.subscribe(`media@pipe.${this.id}`, async (requestMsg, replyTo) => {
-      const { id, ip, port } = JSON.parse(requestMsg);
+      const { id, ip, port, salt } = JSON.parse(requestMsg);
 
-      console.log(requestMsg, this.mediaServers.has(id));
+      // console.log(requestMsg, this.mediaServers.has(id));
 
       const ms = this.mediaServers.get(id);
       if (ms) {
-
         await ms.connect(ip, port);
-      } else {
-
-        const pipe = await this.hub.createPipeTransport();
-        const mediaServer = new MediaServer(id, pipe);
-        mediaServer.onclose = _ => {
-          console.log(`${id} closed`);
-          this.mediaServers.delete(id);
-        };
-        mediaServer.init();
-        this.mediaServers.set(id, mediaServer);
-
-        await mediaServer.connect(ip, port);
-
-        this.nc.publish(`media@pipe.${id}`, JSON.stringify({
-          ip: mediaServer.tuple.ip,
-          port: mediaServer.tuple.port,
-          id: this.id,
-        }))
+      }else{
+        //TODO(CC): impossible
       }
 
     })
@@ -303,7 +309,8 @@ class Agent {
       id: this.id,
       name: this.name,
       host: this.host,
-      area: this.area
+      area: this.area,
+      salt: this.salt,
     })
     this.heartbeatTimer = setInterval(_ => {
 

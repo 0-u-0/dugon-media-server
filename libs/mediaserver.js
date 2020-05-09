@@ -1,11 +1,15 @@
 class MediaServer {
-  constructor(id, pipe) {
+  constructor(id, salt, pipe) {
     this.id = id;
+    this.salt = salt;
     this.pipe = pipe;
     this.isActive = false;
     this.heartbeatCheckTimer = null;
     this.pipeConsumers = new Map();
     this.pipeProducers = new Map();
+
+    this.connected = false;
+
   }
 
   init() {
@@ -14,10 +18,8 @@ class MediaServer {
       if (this.isActive) {
         this.isActive = false;
       } else {
-        clearInterval(this.heartbeatCheckTimer);
-        this.pipe.close();
+        this.close();
         this.onclose();
-
       }
     }, 3000)
   }
@@ -33,7 +35,8 @@ class MediaServer {
   }
 
   async connect(ip, port) {
-    if (this.pipe) {
+    if (this.pipe && !this.connected) {
+      this.connected = true;
       console.log('connect');
 
       await this.pipe.connect({ ip, port });
@@ -54,6 +57,13 @@ class MediaServer {
       const producer = await this.pipe.produce({ id: producerId, kind: kind, rtpParameters });
       this.pipeProducers.set(producerId, producer);
     }
+  }
+
+  //manual close
+  close(){
+    console.log(`mediaserver: ${this.id} closed`);
+    clearInterval(this.heartbeatCheckTimer);
+    this.pipe.close();
   }
 }
 
