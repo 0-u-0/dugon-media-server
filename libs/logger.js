@@ -4,7 +4,7 @@ const output = {
   "type": "console",
   "layout": {
     "type": "pattern",
-    "pattern": "%[[%d{yyyy/MM/dd-hh.mm.ss}] [%p]  %c - %]%m"
+    "pattern": "%[ [ %-5.0p ] |%d{yyyy-MM-dd hh:mm:ss}| %c - %]%m"
   }
 };
 
@@ -16,7 +16,7 @@ const fileoutput = {
   "alwaysIncludePattern": true,
   "layout": {
     "type": "pattern",
-    "pattern": "[%d{yyyy/MM/dd-hh.mm.ss}] [%p]  %c - %m"
+    "pattern": " [ %-5.0p ] |%d{yyyy-MM-dd hh:mm:ss}| %c - %m"
   }
 };
 
