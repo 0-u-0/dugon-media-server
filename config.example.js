@@ -1,4 +1,5 @@
 module.exports = {
+  debug: true,
   id: "foo",
   area: "jp",
   host: "tokyo1",
@@ -10,5 +11,12 @@ module.exports = {
     min: 40000,
     max: 49999
   },
-  monitor: true
+  monitor: 0,
+  log: {
+    'trace': [],
+    'debug': [],
+    'info': ['main'],
+    'warn': [],
+    'error': [],
+  },
 };

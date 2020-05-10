@@ -1,29 +1,40 @@
 
+const DEFAULT_CONFIG_PATH = './config';
 const Agent = require('./libs/agent');
 const Hub = require('./libs/hub');
 const Monitor = require('./libs/monitor');
 
 
-const DEFAULT_CONFIG_PATH = './config';
+const logger = require('./libs/logger').logger;
+const log = logger.getLogger('main');
 
 async function main() {
 
   let configPath = DEFAULT_CONFIG_PATH;
-  if (process.argv.length > 2) {
-    console.log(process.argv)
+  if (process.argv.length === 3) {
     configPath = [process.cwd(), process.argv[2]].join('/');
+    log.info('Config file -> ', configPath);
   }
 
   const Config = require(configPath);
 
-  console.log(Config);
+  global.debug = Config.debug;
+  global.moduleConfig = Config.log;
+
+  logger.loadConfigure();
+
+  log.info(`Config -> ${logger.toLog(Config)}`);
+  log.info(`Nats -> ${Config.nats.join(' ')}`);
+  log.info(`UDP port range -> ${logger.toLog(Config.port)}`);
+
   const hub = new Hub(Config.ip, Config.publicIp, Config.port);
   await hub.init();
 
-  if (Config.monitor) {
-    //TODO(CC): port
-    const monitor = new Monitor(7070, hub);
+  if (Config.monitor != 0) {
+    const monitor = new Monitor(Config.monitor, hub);
     monitor.serve();
+
+    log.info('Run monitor');
   }
 
   const agent = new Agent(hub);

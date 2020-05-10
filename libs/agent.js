@@ -1,13 +1,9 @@
 const NATS = require('nats');
 const MediaServer = require('./mediaserver');
+const utils = require('./utils');
 
-function randomId(length) {
-  let randomNum = 0;
-  while (randomNum < 0.1) {
-    randomNum = Math.random();
-  }
-  return parseInt(randomNum * Math.pow(10, length))
-}
+const logger = require('./logger').logger;
+const log = logger.getLogger('agent');
 
 class Agent {
   constructor(hub) {
@@ -16,7 +12,7 @@ class Agent {
     this.area = '?';
     this.host = '?';
 
-    this.salt = randomId(8);
+    this.salt = utils.randomId(8);
 
     this.hub = hub;
     this.nc = null;
@@ -27,7 +23,7 @@ class Agent {
   }
 
   response(replyTo, data = {}) {
-    console.log('response', data);
+    log.trace('response to signal -> ', JSON.stringify(data));
     this.nc.publish(replyTo, JSON.stringify({
       method: 'response',
       data
@@ -52,13 +48,13 @@ class Agent {
       if (id !== this.id) {
         const ms = this.mediaServers.get(id);
         if (!ms) {
-          console.log('register mediaserver');
+          // console.log('register mediaserver');
 
           const pipe = await this.hub.createPipeTransport();
           const mediaServer = new MediaServer(id, salt, pipe);
 
           mediaServer.onclose = _ => {
-            console.log(`${id} closed`);
+            // console.log(`${id} closed`);
             this.mediaServers.delete(id);
           };
           mediaServer.init();
@@ -105,7 +101,7 @@ class Agent {
       if (media) {
         const params = await media.consume(producerId);
         if (params) {
-          console.log("pipeconsume");
+          // console.log("pipeconsume");
           // console.log(rtpParameters);
           this.nc.publish(replyTo, JSON.stringify({
             rtpParameters: params.rtpParameters,
@@ -122,7 +118,7 @@ class Agent {
     //for signal
     this.nc.subscribe(`media.${id}`, async (requestMsg, replyTo) => {
       const { method, params } = JSON.parse(requestMsg);
-      console.log(requestMsg);
+      // console.log(requestMsg);
 
       switch (method) {
         case 'codecs': {
@@ -205,7 +201,7 @@ class Agent {
             }
 
           } else {
-            console.log('other media server...');
+            // console.log('other media server...');
 
             const mediaServer = this.mediaServers.get(mediaId);
 
@@ -322,7 +318,7 @@ class Agent {
 
         this.nc.publish(`media@heartbeat`, info)
       }, 1000);
-      
+
     }, second * times)
 
 

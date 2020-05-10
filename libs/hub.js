@@ -87,14 +87,13 @@ class Hub {
       });
 
     this.worker.on('died', () => {
-      console.log('mediasoup Worker died, exiting  in 2 seconds... [pid:%d]', this.worker.pid);
+      console.log(`mediasoup Worker died, exiting  in 2 seconds... [pid:${this.worker.pid}]`);
 
       setTimeout(() => process.exit(1), 2000);
     });
 
     this.router = await this.worker.createRouter({ mediaCodecs });
-
-       
+      
   }
 
   get codecs() {
