@@ -10,8 +10,8 @@ const output = {
 
 const fileoutput = {
   "type": "dateFile",
-  "filename": "logs/JS",
-  "pattern": "_yyyy-MM-dd.log",
+  "filename": "logs/media",
+  "pattern": ".yyyy-MM-dd.log",
   "keepFileExt": true,
   "alwaysIncludePattern": true,
   "layout": {

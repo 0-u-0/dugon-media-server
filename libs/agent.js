@@ -312,8 +312,7 @@ class Agent {
 
     const registerReleaseTimer = setTimeout(_ => {
       //TODO: release
-      //TODO: add cpu and bandwidth usage
-
+      //TODO: add cpu usage,cpu threshold and bandwidth usage, bandwidth threshold 
       this.heartbeatTimer = setInterval(_ => {
 
         this.nc.publish(`media@heartbeat`, info)
