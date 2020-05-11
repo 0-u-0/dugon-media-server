@@ -18,7 +18,7 @@ class Sender {
     });//producer
 
     this.producer.on("transportclose", _ => {
-      this.onclose();
+      this.ontransportclose();
     });
   }
 

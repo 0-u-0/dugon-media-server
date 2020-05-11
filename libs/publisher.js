@@ -1,6 +1,9 @@
 const Transport = require('./transport');
 const Sender = require('./sender');
 
+const logger = require('./logger').logger;
+const log = logger.getLogger('publisher');
+
 class Publisher extends Transport {
   constructor(id, router) {
     super(id, router);
@@ -11,8 +14,9 @@ class Publisher extends Transport {
   async publish(codec, metadata) {
     const sender = new Sender(this, codec, metadata);
 
-    sender.onclose = _ => {
+    sender.ontransportclose = _ => {
       this.senders.delete(sender.id);
+      log.debug(`senderId ${sender.id} sender'transport closed.`);
     };
 
     await sender.init();
@@ -28,14 +32,14 @@ class Publisher extends Transport {
     }
   }
 
-  async pause(senderId){
+  async pause(senderId) {
     const sender = this.senders.get(senderId);
     if (sender) {
       await sender.pause();
     }
   }
 
-  async resume(senderId){
+  async resume(senderId) {
     const sender = this.senders.get(senderId);
     if (sender) {
       await sender.resume();

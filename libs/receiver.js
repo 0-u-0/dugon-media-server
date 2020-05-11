@@ -319,7 +319,7 @@ class Receiver {
 
     this.consumer.on('producerclose', () => {
       // Remove from its map.
-      this.onclose();
+      this.onsenderclose();
     });
   }
 

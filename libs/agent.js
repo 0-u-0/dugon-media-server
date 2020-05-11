@@ -30,6 +30,14 @@ class Agent {
     }));
   }
 
+  mediaBroadcast(method, params = {}) {
+    log.trace('mediaBroadcast ', method);
+    this.nc.publish('media.@', JSON.stringify({
+      method,
+      params
+    }));
+  }
+
   errorResponse() {
 
   }
@@ -42,6 +50,8 @@ class Agent {
 
     this.nc = NATS.connect({ servers: natsUrls });
 
+    //FIXME(CC): use one subscribe(pipe) instead of 3 ?
+    //for other media servers
     this.nc.subscribe(`media@pipeheartbeat`, async (requestMsg) => {
       const { id, name, host, area, salt } = JSON.parse(requestMsg);
       //TODO(CC): deal with area
@@ -61,7 +71,7 @@ class Agent {
           this.mediaServers.set(id, mediaServer);
 
           setTimeout(_ => {
-            this.nc.publish(`media@pipe.${id}`, JSON.stringify({
+            this.nc.publish(`media@pipeconnect.${id}`, JSON.stringify({
               ip: mediaServer.tuple.ip,
               port: mediaServer.tuple.port,
               id: this.id,
@@ -81,7 +91,8 @@ class Agent {
 
     });
 
-    this.nc.subscribe(`media@pipe.${this.id}`, async (requestMsg, replyTo) => {
+    //for other media servers
+    this.nc.subscribe(`media@pipeconnect.${this.id}`, async (requestMsg, replyTo) => {
       const { id, ip, port, salt } = JSON.parse(requestMsg);
 
       // console.log(requestMsg, this.mediaServers.has(id));
@@ -95,6 +106,7 @@ class Agent {
 
     })
 
+    //for other media servers
     this.nc.subscribe(`media@pipesub.${this.id}`, async (requestMsg, replyTo) => {
       const { mediaId, producerId } = JSON.parse(requestMsg);
       const media = this.mediaServers.get(mediaId);
@@ -115,6 +127,7 @@ class Agent {
         //TODO(CC): error
       }
     });
+
     //for signal
     this.nc.subscribe(`media.${id}`, async (requestMsg, replyTo) => {
       const { method, params } = JSON.parse(requestMsg);
@@ -138,7 +151,22 @@ class Agent {
         }
         case 'close': {
           const { transportId } = params;
-          this.hub.close(transportId);
+          // this.hub.close(transportId);
+          const transport = this.hub.transports.get(transportId);
+          if (transport) {
+            const senderIds = transport.senders.keys();
+            for(const senderId of senderIds){
+              this.mediaBroadcast('unpublish', {
+                transportId,
+                senderId,
+                mediaId: this.id
+              })
+            }
+
+            transport.close();
+            this.hub.transports.delete(transportId);
+          }
+
           this.response(replyTo);
           break;
         }
@@ -252,6 +280,12 @@ class Agent {
           if (publisher) {
             publisher.unpublish(senderId);
             this.response(replyTo);
+
+            this.mediaBroadcast('unpublish', {
+              transportId,
+              senderId,
+              mediaId: this.id
+            })
           }
           break;
         }
@@ -294,6 +328,21 @@ class Agent {
         }
       }
 
+    });
+    //for media server
+    this.nc.subscribe(`media.@`, async (requestMsg) => {
+      const { method, params } = JSON.parse(requestMsg);
+      log.debug('media broadcast',requestMsg);
+      switch (method) {
+        case 'unpublish': {
+          const { mediaId, transportId, senderId } = params;
+          const media = this.mediaServers.get(mediaId);
+          if (media) {
+            media.unproduce(senderId);
+          }
+          break;
+        }
+      }
     })
 
     const times = 5;

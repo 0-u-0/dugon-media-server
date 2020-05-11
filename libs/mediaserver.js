@@ -1,3 +1,7 @@
+const logger = require('./logger').logger;
+const log = logger.getLogger('mediaserver');
+
+//Remote media server
 class MediaServer {
   constructor(id, salt, pipe) {
     this.id = id;
@@ -46,6 +50,10 @@ class MediaServer {
   async consume(producerId) {
     if (!this.pipeConsumers.has(producerId)) {
       const consumer = await this.pipe.consume({ producerId });
+      consumer.on('producerclose', () => {
+        log.debug(`Media consumer'producer closed : ${producerId}`);
+        this.pipeConsumers.delete(producerId);
+      });
       this.pipeConsumers.set(producerId, consumer);
       return { rtpParameters: consumer.rtpParameters, kind: consumer.kind };
     }
@@ -59,8 +67,17 @@ class MediaServer {
     }
   }
 
+  async unproduce(producerId) {
+    const producer = this.pipeProducers.get(producerId);
+    if (producer) {
+      producer.close();
+      this.pipeProducers.delete(producerId);
+      log.debug(`Media pipeline producer closed : ${producerId}`);
+    }
+  }
+
   //manual close
-  close(){
+  close() {
     console.log(`mediaserver: ${this.id} closed`);
     clearInterval(this.heartbeatCheckTimer);
     this.pipe.close();

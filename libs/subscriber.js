@@ -1,6 +1,9 @@
 const Transport = require('./transport');
 const Receiver = require('./receiver');
 
+const logger = require('./logger').logger;
+const log = logger.getLogger('subscriber');
+
 class Subscriber extends Transport {
   constructor(id, router) {
     super(id, router);
@@ -12,7 +15,8 @@ class Subscriber extends Transport {
   async subscribe(senderId) {
     const receiver = new Receiver(this, senderId);
 
-    receiver.onclose = _ => {
+    receiver.onsenderclose = _ => {
+      log.debug(`senderId : ${senderId}, recevierId : ${receiver.id} , receiver'sender closed.`)
       this.receivers.delete(senderId);
     };
 

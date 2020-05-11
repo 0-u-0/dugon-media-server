@@ -122,13 +122,13 @@ class Hub {
 
   }
 
-  close(transportId) {
-    const transport = this.transports.get(transportId);
-    if (transport) {
-      transport.close();
-      this.transports.delete(transportId);
-    }
-  }
+  // close(transportId) {
+  //   const transport = this.transports.get(transportId);
+  //   if (transport) {
+  //     transport.close();
+  //     this.transports.delete(transportId);
+  //   }
+  // }
 
 }
 
