@@ -62,8 +62,7 @@ class Transport {
       // Additional options that are not part of WebRtcTransportOptions.
       maxIncomingBitrate: 1500000,
       enableSctp: false,
-      numSctpStreams: 0,
-      appData: { consuming: !isPub, producing: isPub }
+      numSctpStreams: 0
     };
 
     this.transport = await this.router.createWebRtcTransport(webRtcTransportOptions);

@@ -18,7 +18,7 @@ $ npm start
 ## Documentation
 
 - [Documentation](https://dugon.one/#/server_overview)
-- [API]()
+- [API](#)
 
 ## Dependencies
 
