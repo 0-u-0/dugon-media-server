@@ -150,19 +150,21 @@ class Agent {
           break;
         }
         case 'close': {
-          const { transportId } = params;
+          const { transportId, role } = params;
           // this.hub.close(transportId);
           const transport = this.hub.transports.get(transportId);
           if (transport) {
-            const senderIds = transport.senders.keys();
-            for(const senderId of senderIds){
-              this.mediaBroadcast('unpublish', {
-                transportId,
-                senderId,
-                mediaId: this.id
-              })
+            if (role === 'pub') {
+              const senderIds = transport.senders.keys();
+              for (const senderId of senderIds) {
+                this.mediaBroadcast('unpublish', {
+                  transportId,
+                  senderId,
+                  mediaId: this.id
+                })
+              }
             }
-
+            
             transport.close();
             this.hub.transports.delete(transportId);
           }
@@ -332,7 +334,7 @@ class Agent {
     //for media server
     this.nc.subscribe(`media.@`, async (requestMsg) => {
       const { method, params } = JSON.parse(requestMsg);
-      log.debug('media broadcast',requestMsg);
+      log.debug('media broadcast', requestMsg);
       switch (method) {
         case 'unpublish': {
           const { mediaId, transportId, senderId } = params;
