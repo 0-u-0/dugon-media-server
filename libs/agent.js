@@ -164,7 +164,7 @@ class Agent {
                 })
               }
             }
-            
+
             transport.close();
             this.hub.transports.delete(transportId);
           }
@@ -303,11 +303,19 @@ class Agent {
           break;
         }
         case 'resume': {
-          const { transportId, senderId } = params;
+          const { transportId, senderId, role } = params;
 
           const transport = this.hub.transports.get(transportId);
           if (transport) {
-            await transport.resume(senderId)
+            await transport.resume(senderId);
+
+            if (role === 'pub') {
+              this.mediaBroadcast('resume', {
+                transportId,
+                senderId,
+                mediaId: this.id
+              });
+            }
             this.response(replyTo);
           } else {
             //TODO: error
@@ -316,11 +324,20 @@ class Agent {
           break;
         }
         case 'pause': {
-          const { transportId, senderId } = params;
+          const { transportId, senderId, role } = params;
 
           const transport = this.hub.transports.get(transportId);
           if (transport) {
             await transport.pause(senderId)
+
+            if (role === 'pub') {
+              this.mediaBroadcast('pause', {
+                transportId,
+                senderId,
+                mediaId: this.id
+              });
+            }
+
             this.response(replyTo);
           } else {
             //TODO: error
@@ -341,6 +358,22 @@ class Agent {
           const media = this.mediaServers.get(mediaId);
           if (media) {
             media.unproduce(senderId);
+          }
+          break;
+        }
+        case 'resume': {
+          const { mediaId, transportId, senderId } = params;
+          const media = this.mediaServers.get(mediaId);
+          if (media) {
+            media.resume(senderId);
+          }
+          break;
+        }
+        case 'pause': {
+          const { mediaId, transportId, senderId } = params;
+          const media = this.mediaServers.get(mediaId);
+          if (media) {
+            media.pause(senderId);
           }
           break;
         }

@@ -76,6 +76,23 @@ class MediaServer {
     }
   }
 
+  async pause(producerId) {
+    const producer = this.pipeProducers.get(producerId);
+    if (producer) {
+      await producer.pause();
+      log.debug(`Media pipeline producer pause : ${producerId}`);
+    }
+  }
+
+
+  async resume(producerId) {
+    const producer = this.pipeProducers.get(producerId);
+    if (producer) {
+      await producer.resume();
+      log.debug(`Media pipeline producer resume : ${producerId}`);
+    }
+  }
+
   //manual close
   close() {
     console.log(`mediaserver: ${this.id} closed`);
