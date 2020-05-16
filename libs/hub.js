@@ -4,6 +4,9 @@ const Publisher = require('./publisher');
 const Subscriber = require('./subscriber');
 const Codec = require('./codec');
 
+const logger = require('./logger').logger;
+const log = logger.getLogger('hub');
+
 const mediaCodecs = [{
   kind: 'audio',
   mimeType: 'audio/opus',
@@ -87,13 +90,13 @@ class Hub {
       });
 
     this.worker.on('died', () => {
-      console.log(`mediasoup Worker died, exiting  in 2 seconds... [pid:${this.worker.pid}]`);
+      log.warn(`mediasoup Worker died, exiting  in 2 seconds... [pid:${this.worker.pid}]`);
 
       setTimeout(() => process.exit(1), 2000);
     });
 
     this.router = await this.worker.createRouter({ mediaCodecs });
-      
+
   }
 
   get codecs() {
@@ -115,9 +118,14 @@ class Hub {
     return transport;
   }
 
-  async createPipeTransport() {
-    //TODO(CC): listen ip
-    const pipeTransport = await this.router.createPipeTransport({ listenIp: this.ip });
+  async createPipeTransport(sameArea) {
+    let listenIp;
+    if (sameArea) {
+      listenIp = this.ip;
+    } else {
+      listenIp = this.publicIp;
+    }
+    const pipeTransport = await this.router.createPipeTransport({ listenIp });
     return pipeTransport;
 
   }

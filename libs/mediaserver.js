@@ -41,7 +41,7 @@ class MediaServer {
   async connect(ip, port) {
     if (this.pipe && !this.connected) {
       this.connected = true;
-      console.log('connect');
+      log.info(`Connect to pipe ${ip}:${port}`);
 
       await this.pipe.connect({ ip, port });
     }
@@ -95,7 +95,7 @@ class MediaServer {
 
   //manual close
   close() {
-    console.log(`mediaserver: ${this.id} closed`);
+    log.info(`mediaserver: ${this.id} closed`);
     clearInterval(this.heartbeatCheckTimer);
     this.pipe.close();
   }

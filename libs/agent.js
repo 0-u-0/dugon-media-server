@@ -57,10 +57,15 @@ class Agent {
       //TODO(CC): deal with area
       if (id !== this.id) {
         const ms = this.mediaServers.get(id);
-        if (!ms) {
-          // console.log('register mediaserver');
 
-          const pipe = await this.hub.createPipeTransport();
+        //create remtoe mediaserver and pipeline
+        if (!ms) {
+          let sameArea = true;
+          if (area != this.area) {
+            sameArea = false;
+          }
+
+          const pipe = await this.hub.createPipeTransport(sameArea);
           const mediaServer = new MediaServer(id, salt, pipe);
 
           mediaServer.onclose = _ => {
