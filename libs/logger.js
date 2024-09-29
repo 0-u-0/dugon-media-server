@@ -1,53 +1,66 @@
 const log4js = require('log4js');
 
+
 const output = {
-  "type": "console",
-  "layout": {
-    "type": "pattern",
-    "pattern": "%[ [ %-5.0p ] |%d{yyyy-MM-dd hh:mm:ss}| %c - %]%m"
+  'type': 'console',
+  'layout': {
+    'type': 'pattern',
+    'pattern': '%[[ %-5.0p ] |%d{yyyy-MM-dd hh:mm:ss.SSS}| %f{1}:%l - %]%m'
   }
 };
 
-const fileoutput = {
-  "type": "dateFile",
-  "filename": "logs/media",
-  "pattern": ".yyyy-MM-dd.log",
-  "keepFileExt": true,
-  "alwaysIncludePattern": true,
-  "layout": {
-    "type": "pattern",
-    "pattern": " [ %-5.0p ] |%d{yyyy-MM-dd hh:mm:ss}| %c - %m"
-  }
-};
+function getFileOutput(filePath) {
+  return {
+    'type': 'dateFile',
+    'filename': filePath,
+    'keepFileExt': true,
+    'numBackups': 10,
+    'alwaysIncludePattern': true,
+    'layout': {
+      'type': 'pattern',
+      'pattern': '[ %-5.0p ] |%d{yyyy-MM-dd hh:mm:ss.SSS}| %c - %m'
+    }
+  };
+}
 
-function generateConfig(moduleConfig = {}, defaultAppender, defaultLevel) {
+function generateConfig(moduleConfig, defaultAppender, defaultLevel) {
   const appenders = {
-    "defaultAppender": defaultAppender
-  }
+    'defaultAppender': defaultAppender
+  };
   const categories = {
-    default: { appenders: ['defaultAppender'], level: defaultLevel }
-  }
+    default: { appenders: ['defaultAppender'], level: defaultLevel, enableCallStack: true }
+  };
   for (const level in moduleConfig) {
     const c = moduleConfig[level];
     for (const x of c) {
-      categories[x] = { appenders: ['defaultAppender'], level }
+      categories[x] = { appenders: ['defaultAppender'], level, enableCallStack: true };
     }
   }
 
   return {
     appenders,
     categories
-  }
+  };
 }
 
+const defaultModuleConfig = {
+  'trace': [],
+  'debug': [],
+  'info': [],
+  'warn': [],
+  'error': [],
+};
 
-function loadConfigure() {
+function loadConfigure(logLevel = 'info', logToFile = false, logFilePath = '', moduleConfig = defaultModuleConfig) {
   let config;
-  if (global.debug === false) {
-    config = generateConfig(global.moduleConfig, fileoutput, 'info');
-  } else {
-    config = generateConfig(global.moduleConfig, output, 'debug');
+
+  let logOutput = output;
+  if (logToFile) {
+    logOutput = getFileOutput(logFilePath);
   }
+
+  config = generateConfig(moduleConfig, logOutput, logLevel);
+
   log4js.configure(config);
 }
 
@@ -60,7 +73,7 @@ function logJsonReplacer(key, value) {
   } else {
     return value;
   }
-};
+}
 
 function toLog(jsonInput) {
   if (jsonInput === undefined) {
@@ -69,17 +82,21 @@ function toLog(jsonInput) {
   if (typeof (jsonInput) !== 'object') {
     return jsonInput;
   } else if (jsonInput.constructor === Array) {
-    return '[Object]';
+    return JSON.stringify(jsonInput);
   }
+
   var jsonString = JSON.stringify(jsonInput, logJsonReplacer);
   return jsonString.replace(/['"]+/g, '')
     .replace(/[:]+/g, ': ')
     .replace(/[,]+/g, ', ')
     .slice(1, -1);
-};
+}
 
 loadConfigure();
 
-exports.logger = log4js;
-exports.logger.loadConfigure = loadConfigure;
-exports.logger.toLog = toLog;
+const logger = log4js;
+logger.loadConfigure = loadConfigure;
+logger.toLog = toLog;
+
+module.exports = { logger };
+
