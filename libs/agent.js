@@ -206,18 +206,19 @@ class Agent {
         }
         case 'senders': {
           const { transportId } = params;
-          const publisher = this.hub.transports.get(transportId);
-          if (publisher) {
-            const senders = [];
+          const sender = this.hub.transports.get(transportId);
+          if (sender) {
+            const publishers = [];
             //TODO: map
-            for (let [senderId, sender] of publisher.senders) {
-              senders.push({
-                id: senderId,
-                metadata: sender.metadata
+            for (let [publisherId, publisher] of sender.publishers) {
+              publishers.push({
+                id: publisherId,
+                metadata: publisher.metadata
               })
             }
+            // TODO(cc): 10/17/24 rename
             this.response(replyTo, {
-              senders
+              senders:publishers
             });
           }
           break;
