@@ -1,8 +1,8 @@
 const Codec = require('./codec')
 
-class Sender {
-  constructor(publisher, codec, metadata) {
-    this.publisher = publisher
+class Publisher {
+  constructor(sender, codec, metadata) {
+    this.sender = sender
     this.producer = null;
 
     this.codec = Object.assign(new Codec(), codec);
@@ -11,7 +11,7 @@ class Sender {
 
   async init() {
     let rtpParameters = this.codec.toRtpParameters();
-    this.producer = await this.publisher.transport.produce({
+    this.producer = await this.sender.transport.produce({
       kind: this.codec.kind,
       metadata: this.metadata,
       rtpParameters
@@ -39,4 +39,4 @@ class Sender {
   }
 }
 
-module.exports = Sender;
+module.exports = Publisher;

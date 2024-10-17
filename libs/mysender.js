@@ -1,8 +1,8 @@
 const Transport = require('./transport');
-const Sender = require('./sender');
+const Publisher = require('./publisher');
 
 const logger = require('./logger').logger;
-const log = logger.getLogger('publisher');
+const log = logger.getLogger('sender');
 
 class MySender extends Transport {
   constructor(id, router) {
@@ -12,7 +12,8 @@ class MySender extends Transport {
   }
 
   async publish(codec, metadata) {
-    const sender = new Sender(this, codec, metadata);
+    // TODO(cc): 10/17/24 rename sender
+    const sender = new Publisher(this, codec, metadata);
 
     sender.ontransportclose = _ => {
       this.senders.delete(sender.id);

@@ -291,10 +291,10 @@ const rtpCapabilities = {
   ]
 }
 
-class Receiver {
-  constructor(subscriber, senderId) {
-    this.subscriber = subscriber;
-    this.senderId = senderId;
+class Subscriber {
+  constructor(receiver, producerId) {
+    this.receiver = receiver;
+    this.producerId = producerId;
 
     this.consumer = null;
 
@@ -306,9 +306,9 @@ class Receiver {
   }
 
   async init() {
-    this.consumer = await this.subscriber.transport.consume(
+    this.consumer = await this.receiver.transport.consume(
       {
-        producerId: this.senderId,
+        producerId: this.producerId,
         rtpCapabilities: rtpCapabilities,
         paused: false
       });
@@ -338,5 +338,5 @@ class Receiver {
   }
 }
 
-module.exports = Receiver;
+module.exports = Subscriber;
 
