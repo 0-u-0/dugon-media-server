@@ -18,10 +18,7 @@ async function main() {
 
   const Config = require(configPath);
 
-  global.debug = Config.debug;
-  global.moduleConfig = Config.log;
-
-  logger.loadConfigure();
+  logger.loadConfigure(Config.logLevel, Config.logToFile, Config.logFilePath, Config.logModule);
 
   log.info(`Config -> ${logger.toLog(Config)}`);
   log.info(`Nats -> ${Config.nats.join(' ')}`);

@@ -1,7 +1,7 @@
 const mediasoup = require('mediasoup');
 
-const Publisher = require('./publisher');
-const Subscriber = require('./subscriber');
+const Sender = require('./mysender');
+const Receiver = require('./myreceiver');
 const Codec = require('./codec');
 
 const logger = require('./logger').logger;
@@ -109,9 +109,9 @@ class Hub {
   async createTransport(id, role) {
     let transport = null;
     if (role === 'pub') {
-      transport = new Publisher(id, this.router);
+      transport = new Sender(id, this.router);
     } else {
-      transport = new Subscriber(id, this.router);
+      transport = new Receiver(id, this.router);
     }
     await transport.init(this.ip, this.publicIp);
     this.transports.set(id, transport);

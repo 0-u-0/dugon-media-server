@@ -4,7 +4,7 @@ const Sender = require('./sender');
 const logger = require('./logger').logger;
 const log = logger.getLogger('publisher');
 
-class Publisher extends Transport {
+class MySender extends Transport {
   constructor(id, router) {
     super(id, router);
     this.senders = new Map();
@@ -49,4 +49,4 @@ class Publisher extends Transport {
 
 }
 
-module.exports = Publisher;
+module.exports = MySender;

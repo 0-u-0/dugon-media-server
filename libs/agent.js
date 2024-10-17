@@ -135,6 +135,7 @@ class Agent {
 
     //for signal
     this.nc.subscribe(`media.${id}`, async (requestMsg, replyTo) => {
+      log.trace(requestMsg,replyTo);
       const { method, params } = JSON.parse(requestMsg);
       // console.log(requestMsg);
 

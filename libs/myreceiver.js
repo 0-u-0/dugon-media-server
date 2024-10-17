@@ -4,7 +4,7 @@ const Receiver = require('./receiver');
 const logger = require('./logger').logger;
 const log = logger.getLogger('subscriber');
 
-class Subscriber extends Transport {
+class MyReceiver extends Transport {
   constructor(id, router) {
     super(id, router);
     this.receivers = new Map();
@@ -54,4 +54,4 @@ class Subscriber extends Transport {
 
 }
 
-module.exports = Subscriber;
+module.exports = MyReceiver;
