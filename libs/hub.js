@@ -1,7 +1,7 @@
 const mediasoup = require('mediasoup');
 
-const Sender = require('./mysender');
-const Receiver = require('./myreceiver');
+const Sender = require('./sender');
+const Receiver = require('./receiver');
 const Codec = require('./codec');
 
 const logger = require('./logger').logger;
