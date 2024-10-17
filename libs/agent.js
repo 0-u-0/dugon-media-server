@@ -161,7 +161,7 @@ class Agent {
           const transport = this.hub.transports.get(transportId);
           if (transport) {
             if (role === 'pub') {
-              const senderIds = transport.senders.keys();
+              const senderIds = transport.publishers.keys();
               for (const senderId of senderIds) {
                 this.mediaBroadcast('unpublish', {
                   transportId,
@@ -194,9 +194,10 @@ class Agent {
         case 'publish': {
           const { transportId, codec, metadata } = params;
 
-          const publisher = this.hub.transports.get(transportId);
-          if (publisher) {
-            const senderId = await publisher.publish(codec, metadata);
+          const sender = this.hub.transports.get(transportId);
+          if (sender) {
+            // TODO(cc): 10/17/24 rename
+            const senderId = await sender.publish(codec, metadata);
             this.response(replyTo, {
               senderId
             });

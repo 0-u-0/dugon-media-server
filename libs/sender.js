@@ -4,50 +4,50 @@ const Publisher = require('./publisher');
 const logger = require('./logger').logger;
 const log = logger.getLogger('sender');
 
-class MySender extends Transport {
+class Sender extends Transport {
   constructor(id, router) {
     super(id, router);
-    this.senders = new Map();
+    this.publishers = new Map();
     this.role = 'pub';
   }
 
   async publish(codec, metadata) {
     // TODO(cc): 10/17/24 rename sender
-    const sender = new Publisher(this, codec, metadata);
+    const publisher = new Publisher(this, codec, metadata);
 
-    sender.ontransportclose = _ => {
-      this.senders.delete(sender.id);
-      log.debug(`senderId ${sender.id} sender'transport closed.`);
+    publisher.ontransportclose = _ => {
+      this.publishers.delete(publisher.id);
+      log.debug(`senderId ${publisher.id} sender'transport closed.`);
     };
 
-    await sender.init();
-    this.senders.set(sender.id, sender);
-    return sender.id;
+    await publisher.init();
+    this.publishers.set(publisher.id, publisher);
+    return publisher.id;
   }
 
-  unpublish(senderId) {
-    const sender = this.senders.get(senderId);
-    if (sender) {
-      sender.close();
-      this.senders.delete(senderId);
+  unpublish(publisherId) {
+    const publisher = this.publishers.get(publisherId);
+    if (publisher) {
+      publisher.close();
+      this.publishers.delete(publisherId);
     }
   }
 
-  async pause(senderId) {
-    const sender = this.senders.get(senderId);
-    if (sender) {
-      await sender.pause();
+  async pause(publisherId) {
+    const publisher = this.publishers.get(publisherId);
+    if (publisher) {
+      await publisher.pause();
     }
   }
 
-  async resume(senderId) {
-    const sender = this.senders.get(senderId);
-    if (sender) {
-      await sender.resume();
+  async resume(publisherId) {
+    const publisher = this.publishers.get(publisherId);
+    if (publisher) {
+      await publisher.resume();
     }
   }
 
 
 }
 
-module.exports = MySender;
+module.exports = Sender;
