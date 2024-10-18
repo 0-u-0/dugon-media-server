@@ -4,54 +4,54 @@ const Subscriber = require('./subscriber');
 const logger = require('./logger').logger;
 const log = logger.getLogger('receiver');
 
-class MyReceiver extends Transport {
+class Receiver extends Transport {
   constructor(id, router) {
     super(id, router);
-    this.receivers = new Map();
+    this.subscribers = new Map();
 
     this.role = 'sub';
   }
 
   async subscribe(publisherId) {
-    const receiver = new Subscriber(this, publisherId);
+    const subscriber = new Subscriber(this, publisherId);
 
-    receiver.onsenderclose = _ => {
-      log.debug(`publisherId : ${publisherId}, recevierId : ${receiver.id} , receiver'sender closed.`)
-      this.receivers.delete(publisherId);
+    subscriber.onsenderclose = _ => {
+      log.debug(`publisherId : ${publisherId}, recevierId : ${subscriber.id} , receiver'sender closed.`)
+      this.subscribers.delete(publisherId);
     };
 
-    await receiver.init()
+    await subscriber.init()
 
-    this.receivers.set(publisherId, receiver);
+    this.subscribers.set(publisherId, subscriber);
 
     return {
-      receiverId: receiver.id,
-      codec: receiver.codec
+      subscriberId: subscriber.id,
+      codec: subscriber.codec
     };
   }
 
   unsubscribe(publisherId) {
-    const receiver = this.receivers.get(publisherId);
-    if (receiver) {
-      receiver.close();
-      this.receivers.delete(publisherId);
+    const subscriber = this.subscribers.get(publisherId);
+    if (subscriber) {
+      subscriber.close();
+      this.subscribers.delete(publisherId);
     }
   }
 
   async pause(publisherId) {
-    const receiver = this.receivers.get(publisherId);
-    if (receiver) {
-      await receiver.pause();
+    const subscriber = this.subscribers.get(publisherId);
+    if (subscriber) {
+      await subscriber.pause();
     }
   }
 
   async resume(publisherId) {
-    const receiver = this.receivers.get(publisherId);
-    if (receiver) {
-      await receiver.resume();
+    const subscriber = this.subscribers.get(publisherId);
+    if (subscriber) {
+      await subscriber.resume();
     }
   }
 
 }
 
-module.exports = MyReceiver;
+module.exports = Receiver;

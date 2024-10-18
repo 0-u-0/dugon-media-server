@@ -230,10 +230,10 @@ class Agent {
             //FIXME(CC): same
             const subscriber = this.hub.transports.get(transportId);
             if (subscriber) {
-              const { codec, receiverId } = await subscriber.subscribe(publisherId);
+              const { codec, subscriberId } = await subscriber.subscribe(publisherId);
               this.response(replyTo, {
                 codec,
-                receiverId
+                receiverId:subscriberId
               });
 
             }
@@ -248,10 +248,10 @@ class Agent {
                 //FIXME(CC): same
                 const subscriber = this.hub.transports.get(transportId);
                 if (subscriber) {
-                  const { codec, receiverId } = await subscriber.subscribe(publisherId);
+                  const { codec, subscriberId } = await subscriber.subscribe(publisherId);
                   this.response(replyTo, {
                     codec,
-                    receiverId
+                    receiverId:subscriberId
                   });
                 }
               } else {
@@ -267,10 +267,10 @@ class Agent {
                   await mediaServer.produce(producerId, kind, rtpParameters);
                   const subscriber = this.hub.transports.get(transportId);
                   if (subscriber) {
-                    const { codec, receiverId } = await subscriber.subscribe(producerId);
+                    const { codec, subscriberId } = await subscriber.subscribe(producerId);
                     this.response(replyTo, {
                       codec,
-                      receiverId
+                      receiverId:subscriberId
                     });
                   }
                 })
