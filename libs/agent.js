@@ -233,7 +233,7 @@ class Agent {
               const { codec, subscriberId } = await subscriber.subscribe(publisherId);
               this.response(replyTo, {
                 codec,
-                receiverId:subscriberId
+                subscriberId
               });
 
             }
@@ -251,7 +251,7 @@ class Agent {
                   const { codec, subscriberId } = await subscriber.subscribe(publisherId);
                   this.response(replyTo, {
                     codec,
-                    receiverId:subscriberId
+                    subscriberId
                   });
                 }
               } else {
@@ -270,7 +270,7 @@ class Agent {
                     const { codec, subscriberId } = await subscriber.subscribe(producerId);
                     this.response(replyTo, {
                       codec,
-                      receiverId:subscriberId
+                      subscriberId
                     });
                   }
                 })
