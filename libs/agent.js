@@ -197,14 +197,14 @@ class Agent {
           const sender = this.hub.transports.get(transportId);
           if (sender) {
             // TODO(cc): 10/17/24 rename
-            const senderId = await sender.publish(codec, metadata);
+            const publisherId = await sender.publish(codec, metadata);
             this.response(replyTo, {
-              senderId
+              publisherId
             });
           }
           break;
         }
-        case 'senders': {
+        case 'pubs': {
           const { transportId } = params;
           const sender = this.hub.transports.get(transportId);
           if (sender) {
@@ -218,19 +218,19 @@ class Agent {
             }
             // TODO(cc): 10/17/24 rename
             this.response(replyTo, {
-              senders:publishers
+              publishers
             });
           }
           break;
         }
         case 'subscribe': {
-          const { mediaId, transportId, senderId } = params;
+          const { mediaId, transportId, senderId, publisherId } = params;
 
           if (mediaId === this.id) {
             //FIXME(CC): same
             const subscriber = this.hub.transports.get(transportId);
             if (subscriber) {
-              const { codec, receiverId } = await subscriber.subscribe(senderId);
+              const { codec, receiverId } = await subscriber.subscribe(publisherId);
               this.response(replyTo, {
                 codec,
                 receiverId
@@ -284,16 +284,16 @@ class Agent {
           break;
         }
         case 'unpublish': {
-          const { transportId, senderId } = params;
+          const { transportId, publisherId } = params;
 
           const publisher = this.hub.transports.get(transportId);
           if (publisher) {
-            publisher.unpublish(senderId);
+            publisher.unpublish(publisherId);
             this.response(replyTo);
 
             this.mediaBroadcast('unpublish', {
               transportId,
-              senderId,
+              publisherId,
               mediaId: this.id
             })
           }
