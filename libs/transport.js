@@ -6,8 +6,8 @@ class Transport {
   }
 
   //useless interface
-  async pause(senderId){};
-  async resume(senderId){};
+  async pause(publisherId){};
+  async resume(publisherId){};
 
   get transportParameters() {
     //TODO: make these parameters as attributes

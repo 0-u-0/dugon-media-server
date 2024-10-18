@@ -17,7 +17,7 @@ class Sender extends Transport {
 
     publisher.ontransportclose = _ => {
       this.publishers.delete(publisher.id);
-      log.debug(`senderId ${publisher.id} sender'transport closed.`);
+      log.debug(`PublisherId ${publisher.id} sender'transport closed.`);
     };
 
     await publisher.init();

@@ -12,17 +12,17 @@ class MyReceiver extends Transport {
     this.role = 'sub';
   }
 
-  async subscribe(senderId) {
-    const receiver = new Subscriber(this, senderId);
+  async subscribe(publisherId) {
+    const receiver = new Subscriber(this, publisherId);
 
     receiver.onsenderclose = _ => {
-      log.debug(`senderId : ${senderId}, recevierId : ${receiver.id} , receiver'sender closed.`)
-      this.receivers.delete(senderId);
+      log.debug(`publisherId : ${publisherId}, recevierId : ${receiver.id} , receiver'sender closed.`)
+      this.receivers.delete(publisherId);
     };
 
     await receiver.init()
 
-    this.receivers.set(senderId, receiver);
+    this.receivers.set(publisherId, receiver);
 
     return {
       receiverId: receiver.id,
@@ -30,23 +30,23 @@ class MyReceiver extends Transport {
     };
   }
 
-  unsubscribe(senderId) {
-    const receiver = this.receivers.get(senderId);
+  unsubscribe(publisherId) {
+    const receiver = this.receivers.get(publisherId);
     if (receiver) {
       receiver.close();
-      this.receivers.delete(senderId);
+      this.receivers.delete(publisherId);
     }
   }
 
-  async pause(senderId) {
-    const receiver = this.receivers.get(senderId);
+  async pause(publisherId) {
+    const receiver = this.receivers.get(publisherId);
     if (receiver) {
       await receiver.pause();
     }
   }
 
-  async resume(senderId) {
-    const receiver = this.receivers.get(senderId);
+  async resume(publisherId) {
+    const receiver = this.receivers.get(publisherId);
     if (receiver) {
       await receiver.resume();
     }
