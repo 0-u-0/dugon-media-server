@@ -161,11 +161,11 @@ class Agent {
           const transport = this.hub.transports.get(transportId);
           if (transport) {
             if (role === 'pub') {
-              const senderIds = transport.publishers.keys();
-              for (const senderId of senderIds) {
+              const publisherIds = transport.publishers.keys();
+              for (const publisherId of publisherIds) {
                 this.mediaBroadcast('unpublish', {
                   transportId,
-                  senderId,
+                  publisherId,
                   mediaId: this.id
                 })
               }
@@ -224,7 +224,7 @@ class Agent {
           break;
         }
         case 'subscribe': {
-          const { mediaId, transportId, senderId, publisherId } = params;
+          const { mediaId, transportId, publisherId } = params;
 
           if (mediaId === this.id) {
             //FIXME(CC): same
@@ -244,11 +244,11 @@ class Agent {
             const mediaServer = this.mediaServers.get(mediaId);
 
             if (mediaServer) {
-              if (mediaServer.pipeProducers.has(senderId)) {
+              if (mediaServer.pipeProducers.has(publisherId)) {
                 //FIXME(CC): same
                 const subscriber = this.hub.transports.get(transportId);
                 if (subscriber) {
-                  const { codec, receiverId } = await subscriber.subscribe(senderId);
+                  const { codec, receiverId } = await subscriber.subscribe(publisherId);
                   this.response(replyTo, {
                     codec,
                     receiverId
@@ -258,7 +258,7 @@ class Agent {
                 //request pipe
                 const requestMsg = JSON.stringify({
                   mediaId: this.id,
-                  producerId: senderId,
+                  producerId: publisherId,
                 });
 
                 this.nc.request(`media@pipesub.${mediaId}`, requestMsg, async (responseMsg) => {
@@ -300,27 +300,27 @@ class Agent {
           break;
         }
         case 'unsubscribe': {
-          const { transportId, senderId } = params;
+          const { transportId, publisherId } = params;
 
           const subscriber = this.hub.transports.get(transportId);
           if (subscriber) {
-            subscriber.unsubscribe(senderId);
+            subscriber.unsubscribe(publisherId);
             this.response(replyTo);
           }
 
           break;
         }
         case 'resume': {
-          const { transportId, senderId, role } = params;
+          const { transportId, publisherId, role } = params;
 
           const transport = this.hub.transports.get(transportId);
           if (transport) {
-            await transport.resume(senderId);
+            await transport.resume(publisherId);
 
             if (role === 'pub') {
               this.mediaBroadcast('resume', {
                 transportId,
-                senderId,
+                publisherId,
                 mediaId: this.id
               });
             }
@@ -332,16 +332,16 @@ class Agent {
           break;
         }
         case 'pause': {
-          const { transportId, senderId, role } = params;
+          const { transportId, publisherId, role } = params;
 
           const transport = this.hub.transports.get(transportId);
           if (transport) {
-            await transport.pause(senderId)
+            await transport.pause(publisherId)
 
             if (role === 'pub') {
               this.mediaBroadcast('pause', {
                 transportId,
-                senderId,
+                publisherId,
                 mediaId: this.id
               });
             }
@@ -362,26 +362,26 @@ class Agent {
       log.debug('media broadcast', requestMsg);
       switch (method) {
         case 'unpublish': {
-          const { mediaId, transportId, senderId } = params;
+          const { mediaId, transportId, publisherId } = params;
           const media = this.mediaServers.get(mediaId);
           if (media) {
-            media.unproduce(senderId);
+            media.unproduce(publisherId);
           }
           break;
         }
         case 'resume': {
-          const { mediaId, transportId, senderId } = params;
+          const { mediaId, transportId, publisherId } = params;
           const media = this.mediaServers.get(mediaId);
           if (media) {
-            media.resume(senderId);
+            media.resume(publisherId);
           }
           break;
         }
         case 'pause': {
-          const { mediaId, transportId, senderId } = params;
+          const { mediaId, transportId, publisherId } = params;
           const media = this.mediaServers.get(mediaId);
           if (media) {
-            media.pause(senderId);
+            media.pause(publisherId);
           }
           break;
         }
